@@ -1,6 +1,6 @@
 package com.leapord.supercoin.util;
 
-import java.util.List;
+import com.leapord.supercoin.entity.Depth;
 
 /**
  * @author Biao
@@ -16,14 +16,14 @@ public class KlineUtil {
         System.loadLibrary("kline");
     }
 
-    public native static int getTendency(List<List<Float>> kNums);
+    public native static int getDepthTendency(Depth depth);
 
-    public native static long getFirstIncreaseTime(List<List<Float>> kNums);
-
-    public native static long getFirstDecreaseTime(List<List<Float>> kNums);
-
-    public native static long getSecondIncreaseTime(List<List<Float>> kNums);
-
-    public native static long getSecondDecreaseTime(List<List<Float>> kNums);
+//    public native static long getFirstIncreaseTime(List<List<Float>> kNums);
+//
+//    public native static long getFirstDecreaseTime(List<List<Float>> kNums);
+//
+//    public native static long getSecondIncreaseTime(List<List<Float>> kNums);
+//
+//    public native static long getSecondDecreaseTime(List<List<Float>> kNums);
 
 }

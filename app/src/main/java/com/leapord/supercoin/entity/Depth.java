@@ -13,7 +13,9 @@ import lombok.Data;
 @Data
 public class Depth {
 
-    private List<List<Float>> asks;
-    private List<List<Float>> bids;
+    private List<double[]> asks;
+
+    private List<double[]> bids;
+
 
 }
