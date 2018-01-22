@@ -9,7 +9,8 @@ using namespace std;
 
 #define TAG "leopard_JNI"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO,TAG,__VA_ARGS__)
-#define NELM(methds) sizeof(methds) / sizeof(methds[0])
+#define NELM(methds) ((int)(sizeof(methds)/sizeof((methds)[0])))
+
 
 
 void get_data_array_from_list(JNIEnv *env, jobject object_list, double **arr_point) {
