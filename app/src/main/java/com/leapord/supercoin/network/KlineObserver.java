@@ -2,7 +2,6 @@ package com.leapord.supercoin.network;
 
 import com.leapord.supercoin.entity.KlineAnalyzeInfo;
 import com.leapord.supercoin.entity.LiveData;
-import com.leapord.supercoin.util.KlineUtil;
 import com.orhanobut.logger.Logger;
 
 import org.greenrobot.eventbus.EventBus;
@@ -39,7 +38,7 @@ public class KlineObserver extends CoinObserver<LiveData> {
     @Override
     public void onNext(LiveData value) {
         Logger.d("处理K线数据");
-        int tendency = KlineUtil.getDepthTendency(value.getDepth());
+//        int tendency = KlineUtil.getDepthTendency(value.getDepth());
 //        long predicateTime = KlineUtil.getPredicateTime(value);
         KlineAnalyzeInfo klineAnalyzeInfo = new KlineAnalyzeInfo();
         Logger.d("更新界面数据");

@@ -12,9 +12,9 @@ import lombok.Data;
  */
 @Data
 public class Depth {
-
+    //卖方深度
     private List<double[]> asks;
-
+    //买方深度
     private List<double[]> bids;
 
 

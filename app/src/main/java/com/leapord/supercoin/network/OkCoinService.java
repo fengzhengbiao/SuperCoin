@@ -36,7 +36,7 @@ public interface OkCoinService {
     Observable<List<Trade>> fetchTrades(@Query("symbol") String symbol, @Query("since") String since);
 
     @GET("/api/v1/kline.do")
-    Observable<List<List<Double>>> fetchKline(@Query("symbol") String symbol, @Query("type") String type);
+    Observable<List<double[]>> fetchKline(@Query("symbol") String symbol, @Query("type") String type);
 
     //    用于OKEx快速进行币币交易
     @FormUrlEncoded
