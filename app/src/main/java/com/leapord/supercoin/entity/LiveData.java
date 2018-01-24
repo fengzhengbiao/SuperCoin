@@ -16,6 +16,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LiveData {
-    private List<List<Double>> kLineData;
+    private List<double[]> kLineData;
     private Depth depth;
 }

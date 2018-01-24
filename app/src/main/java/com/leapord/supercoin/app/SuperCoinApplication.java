@@ -3,6 +3,7 @@ package com.leapord.supercoin.app;
 import android.app.Application;
 import android.content.Context;
 
+import com.leapord.supercoin.util.SpUtils;
 import com.leapord.supercoin.util.ToastUtis;
 import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.BuildConfig;
@@ -30,7 +31,6 @@ public class SuperCoinApplication extends Application {
             }
         });
         ToastUtis.init(this);
-
-
+        SpUtils.init(this);
     }
 }

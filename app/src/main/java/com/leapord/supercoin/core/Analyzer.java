@@ -1,6 +1,9 @@
-package com.leapord.supercoin.util;
+package com.leapord.supercoin.core;
+
+import android.util.Log;
 
 import com.leapord.supercoin.entity.Depth;
+import com.leapord.supercoin.util.TimeUtils;
 
 import org.apache.commons.math3.fitting.PolynomialCurveFitter;
 import org.apache.commons.math3.fitting.WeightedObservedPoints;
@@ -14,7 +17,9 @@ import java.util.List;
  * @email fengzb0216@sina.com
  */
 
-public class KlineUtil {
+public class Analyzer {
+
+    private static final String TAG = "Analyzer";
 
     /**
      * @param depth
@@ -37,8 +42,8 @@ public class KlineUtil {
         List<double[]> bids = depth.getBids();
         double bidHight = 0, bidMiddle = 0, bidLow = 0;
         int sizeBids = bids.size();
-        int stdBid = size / 3;
-        for (int i = 0; i < 3 * sizeBids; i++) {
+        int stdBid = sizeBids / 3;
+        for (int i = 0; i < 3 * stdBid; i++) {
             if (i < stdAsk) {
                 bidHight += asks.get(i)[1];
             } else if (i < 2 * stdAsk) {
@@ -69,7 +74,7 @@ public class KlineUtil {
             } else if (bidHight < bidMiddle && bidMiddle < bidLow) {
                 return 0;      //可能下跌
             } else {
-                return 0;         //价格平稳
+                return bidLow > 5 * bidHight ? -1 : 0;         //价格平稳
             }
         }
     }
@@ -89,16 +94,26 @@ public class KlineUtil {
      * @return 上涨点个数
      */
     public static int getIncreasePointCountByKline(List<double[]> kNums, int pointCount) {
-        if (pointCount < 3) {
+        if (pointCount < 2) {
             throw new RuntimeException("采样点不能少于三个");
         }
         int endIndex = kNums.size() - 1;
         int tendency = 0;
-        for (int i = endIndex; i > endIndex - pointCount; i++) {
+        for (int i = endIndex; i > endIndex - pointCount; i--) {
             double[] kData = kNums.get(i);
             tendency += (kData[4] - kData[1]) > 0 ? 1 : 0;
         }
         return tendency;
+    }
+
+    /**
+     * 预测时间是否有效
+     *
+     * @param time
+     * @return
+     */
+    public static boolean isTimeValid(long time) {
+        return Math.abs(time - System.currentTimeMillis()) < 1 * 60 * 60 * 1000;
     }
 
     /**
@@ -110,47 +125,122 @@ public class KlineUtil {
      */
     public static int getTendencyByKline(List<double[]> kNums, int pointCount) {
         int startIndex = kNums.size() - 1 - pointCount;
-        int middleIndex = startIndex + pointCount / 2 + pointCount % 2 == 0 ? 0 : 1;
+        int middleIndex = startIndex + pointCount / 2 + (pointCount % 2 == 0 ? 0 : 1);
         WeightedObservedPoints startPoints = new WeightedObservedPoints();
+        WeightedObservedPoints endPoints = new WeightedObservedPoints();
         WeightedObservedPoints fullPoints = new WeightedObservedPoints();
-        WeightedObservedPoints points = new WeightedObservedPoints();
         // 将x-y数据元素调用points.add(x[i], y[i])加入到观察点序列中
+
         for (int i = startIndex; i < kNums.size(); i++) {
             double[] kPoint = kNums.get(i);
             if (i < middleIndex) {
                 startPoints.add(kPoint[0], kPoint[1]);
+            } else {
+                endPoints.add(kPoint[0], kPoint[1]);
             }
             fullPoints.add(kPoint[0], kPoint[1]);
         }
-
         // degree 指定多项式阶数
         PolynomialCurveFitter fitter = PolynomialCurveFitter.create(1);
         // 曲线拟合，结果保存于双精度数组中，由常数项至最高次幂系数排列
-        double kFull = fitter.fit(points.toList())[1];
-        double kStart = fitter.fit(points.toList())[1];
+        double kStart = fitter.fit(startPoints.toList())[1];
+        double kEnd = fitter.fit(endPoints.toList())[1];
+        double kFull = fitter.fit(fullPoints.toList())[1];
         if (kFull > 0) {
-            return kStart < kFull ? 2 : 1;
+            return kEnd < 0 ? -1 : (kStart < kFull ? 2 : 1);
         } else {
-            return kStart < kFull ? -1 : -2;
+            return kEnd > 0 ? 1 : (kStart < kFull ? -1 : -2);
         }
     }
 
     /**
-     *
-     * @param kNums     k线数据
-     * @param tendency       k线
-     *                       上涨或者下降趋势
-     * @return
+     * @param kNums    k线数据
+     * @param tendency k线
+     *                 上涨或者下降趋势
+     * @return 返回转折点对应的时间
      */
-    public static long getPredicateTime(List<double[]> kNums, int tendency) {
-        if (tendency<0){
-
-        }else {
-
+    public static long getPredicateTimeByNearPoint(List<double[]> kNums, int pointCount, int tendency) {
+        int endIndex = kNums.size() - 1;
+        WeightedObservedPoints points = new WeightedObservedPoints();
+        for (int i = endIndex - pointCount; i < endIndex; i++) {
+            double[] doubles = kNums.get(i);
+            if (i == endIndex - pointCount) {
+                Log.i(TAG, "StartTime: " + TimeUtils.formatDate((long) doubles[0]));
+            }
+            points.add(doubles[0], doubles[1]);
         }
-        return 0l;
+        PolynomialCurveFitter fitter = PolynomialCurveFitter.create(2);
+        double[] fit = fitter.fit(points.toList());
+        return getPoleX(fit);
     }
 
+    /**
+     * 自动取点获取预测时间
+     * @param kNums
+     * @param tendency
+     * @return
+     */
+    public static long getAutoPredicateTime(List<double[]> kNums, int tendency) {
+        int endIndex = kNums.size() - 1;
+        WeightedObservedPoints points = new WeightedObservedPoints();
+        for (int i = endIndex; i > 0; i--) {
+
+        }
+
+        PolynomialCurveFitter fitter = PolynomialCurveFitter.create(2);
+        double[] fit = fitter.fit(points.toList());
+        return getPoleX(fit);
+    }
+
+
+    /**
+     * 是否连续几个点上涨
+     *
+     * @param kNums
+     * @param continuCount
+     * @return
+     */
+    public static boolean isContinuousIncrease(List<double[]> kNums, int continuCount) {
+        int size = kNums.size();
+        for (int i = size - 1; i > size - 1 - continuCount; i--) {
+            double[] kPoint = kNums.get(i);
+            if (kPoint[4] < kPoint[1]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 是否连续几个点下降
+     *
+     * @param kNums
+     * @param continuCount
+     * @return
+     */
+    public static boolean isContinuousDecrease(List<double[]> kNums, int continuCount) {
+        int size = kNums.size();
+        for (int i = size - 1; i > size - 1 - continuCount; i--) {
+            double[] kPoint = kNums.get(i);
+            if (kPoint[4] > kPoint[1]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 获取二次曲线的极点位置
+     *
+     * @param fit
+     * @return 获取不到时默认返回0
+     */
+    public static long getPoleX(double[] fit) {
+        if (fit != null && fit.length > 1) {
+            return (long) (-fit[1] / (2 * fit[2]));
+        }
+        return 0L;
+    }
 
 
 }
