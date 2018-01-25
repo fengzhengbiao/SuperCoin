@@ -66,7 +66,7 @@ public class Analyzer {
             } else if (bidHight < bidMiddle && bidMiddle < bidLow) {
                 return 0;      //价格平稳
             } else {
-                return 1;      //可能下跌
+                return 1;
             }
         } else {
             if (bidHight > bidMiddle && bidMiddle > bidLow) {
@@ -74,9 +74,20 @@ public class Analyzer {
             } else if (bidHight < bidMiddle && bidMiddle < bidLow) {
                 return 0;      //可能下跌
             } else {
-                return bidLow > 5 * bidHight ? -1 : 0;         //价格平稳
+                return bidLow > 5 * bidHight ? -1 : 0;
             }
         }
+    }
+
+    /**
+     * 根据买卖盘获取最新市价
+     *
+     * @param depth
+     * @return
+     */
+    public static double[] getPriceFromDepth(Depth depth) {
+        List<double[]> asks = depth.getAsks();
+        return new double[]{asks.get(asks.size() - 1)[0], depth.getBids().get(0)[0]};
     }
 
     /**
@@ -123,7 +134,7 @@ public class Analyzer {
      * @param pointCount 建议>=5
      * @return -2:下跌  -1 ：可能下跌  0 ：平稳  1 : 可能上涨  2 ：上涨
      */
-    public static int getTendencyByKline(List<double[]> kNums, int pointCount) {
+    public static double[] getTendencyByKline(List<double[]> kNums, int pointCount) {
         int startIndex = kNums.size() - 1 - pointCount;
         int middleIndex = startIndex + pointCount / 2 + (pointCount % 2 == 0 ? 0 : 1);
         WeightedObservedPoints startPoints = new WeightedObservedPoints();
@@ -146,11 +157,14 @@ public class Analyzer {
         double kStart = fitter.fit(startPoints.toList())[1];
         double kEnd = fitter.fit(endPoints.toList())[1];
         double kFull = fitter.fit(fullPoints.toList())[1];
+        double tendncy = 0;
         if (kFull > 0) {
-            return kEnd < 0 ? -1 : (kStart < kFull ? 2 : 1);
+            tendncy = kEnd < 0 ? -1 : (kStart < kFull ? 2 : 1);
         } else {
-            return kEnd > 0 ? 1 : (kStart < kFull ? -1 : -2);
+            tendncy = kEnd > 0 ? 1 : (kStart < kFull ? -1 : -2);
         }
+
+        return new double[]{tendncy, kStart, kEnd, kFull};
     }
 
     /**
@@ -176,6 +190,7 @@ public class Analyzer {
 
     /**
      * 自动取点获取预测时间
+     *
      * @param kNums
      * @param tendency
      * @return

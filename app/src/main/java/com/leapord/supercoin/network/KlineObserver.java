@@ -1,5 +1,6 @@
 package com.leapord.supercoin.network;
 
+import com.leapord.supercoin.core.TradeManager;
 import com.leapord.supercoin.entity.LiveData;
 import com.leapord.supercoin.core.Analyzer;
 import com.leapord.supercoin.util.TimeUtils;
@@ -39,13 +40,12 @@ public class KlineObserver extends CoinObserver<LiveData> {
         Logger.d("处理K线数据");
         int tendencyByDepth = Analyzer.getDepthTendency(value.getDepth());
         int increasePointCount = Analyzer.getIncreasePointCountByKline(value.getKLineData(), 5);
-        int tendencyByKline = Analyzer.getTendencyByKline(value.getKLineData(), 5);
+        double[] tendencyByKline = Analyzer.getTendencyByKline(value.getKLineData(), 7);
+        TradeManager.autoTrade(mSymbol,tendencyByDepth, tendencyByKline, increasePointCount, value);
         long time = Analyzer.getPredicateTimeByNearPoint(value.getKLineData(), 5, tendencyByDepth);
-
         Logger.d("深度趋势：" + tendencyByDepth + "  上升点个数：" + increasePointCount + "  K线预测趋势：" + tendencyByKline + " 预测时间：" + TimeUtils.formatDate(time));
 //        long predicateTime = Analyzer.getPredicateTime(value);
 //        KlineAnalyzeInfo klineAnalyzeInfo = new KlineAnalyzeInfo();
-//        Logger.d("更新界面数据");
 //        EventBus.getDefault().post(klineAnalyzeInfo);
     }
 }

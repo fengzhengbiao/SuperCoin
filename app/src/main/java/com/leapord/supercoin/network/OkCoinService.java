@@ -48,7 +48,6 @@ public interface OkCoinService {
     Observable<TradeResponse> makeTrade(@Field("api_key") String apiKey,
                                         @Field("amount") float amount,      //交易数量
                                         @Field("price") float price,        //限价单价格
-                                        @Field("sign") String sign,         //请求参数签名
                                         @Field("symbol") String symbol,
                                         @Field("type") String type          ////交易类型Okcoin.Trade
     );
