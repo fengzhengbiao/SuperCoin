@@ -32,6 +32,12 @@ public interface OkCoin {
         String GAS = "gas_usdt";
 
         String SWFTC = "swftc_usdt";
+
+        String LIGHT = "light_usdt";
+
+        String OF = "of_usdt";
+
+        String REF = "ref_usdt";
     }
 
     /**

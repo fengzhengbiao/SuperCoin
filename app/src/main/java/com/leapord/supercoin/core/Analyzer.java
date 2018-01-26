@@ -45,11 +45,11 @@ public class Analyzer {
         int stdBid = sizeBids / 3;
         for (int i = 0; i < 3 * stdBid; i++) {
             if (i < stdAsk) {
-                bidHight += asks.get(i)[1];
+                bidHight += bids.get(i)[1];
             } else if (i < 2 * stdAsk) {
-                bidMiddle += asks.get(i)[1];
+                bidMiddle += bids.get(i)[1];
             } else {
-                bidLow += asks.get(i)[1];
+                bidLow += bids.get(i)[1];
             }
         }
         if (askLow > askMiddle && askMiddle > askHight) {       //买盘下降

@@ -1,13 +1,23 @@
 package com.leapord.supercoin.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  * @author Biao
  * @date 2018/1/20
  * @description
  * @email fengzb0216@sina.com
  */
-
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Order {
+
+    public Order(Long order_id) {
+        this.order_id = order_id;
+    }
 
     /**
      * amount : 0.1     委托数量
@@ -25,13 +35,21 @@ public class Order {
     private double amount;
     private int avg_price;
     private long create_date;
-    private int deal_amount;
-    private int order_id;
-    private int orders_id;
-    private int price;
+    private double deal_amount;
+    private Long order_id;
+    private Long orders_id;
+    private double price;
     private int status;
     private String symbol;
     private String type;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        Order order = (Order) o;
+        return order_id == order.order_id;
+    }
 
 }

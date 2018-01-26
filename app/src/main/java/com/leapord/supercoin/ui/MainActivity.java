@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void startLooper() {
         Intent intent = new Intent(this, LooperService.class);
         ArrayList<String> symbols = new ArrayList<>();
-        symbols.add(OkCoin.USDT.SWFTC);
+        symbols.add(OkCoin.USDT.OF);
         intent.putStringArrayListExtra("SYMBOLS", symbols);
         startService(intent);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

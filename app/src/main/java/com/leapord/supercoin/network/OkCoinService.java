@@ -3,6 +3,7 @@ package com.leapord.supercoin.network;
 import com.leapord.supercoin.entity.BbTicker;
 import com.leapord.supercoin.entity.CancelTradeResp;
 import com.leapord.supercoin.entity.Depth;
+import com.leapord.supercoin.entity.OrderData;
 import com.leapord.supercoin.entity.Trade;
 import com.leapord.supercoin.entity.TradeResponse;
 import com.leapord.supercoin.entity.UserInfo;
@@ -43,30 +44,31 @@ public interface OkCoinService {
     @POST("/api/v1/userinfo.do")
     Observable<UserInfo> fetchUserInfo(@Field("api_key") String apiKey);
 
+    @FormUrlEncoded
     @POST("/api/v1/trade.do")
         // 用户下单
-    Observable<TradeResponse> makeTrade(@Field("api_key") String apiKey,
-                                        @Field("amount") float amount,      //交易数量
+    Observable<TradeResponse> makeTrade(@Field("amount") float amount,      //交易数量
                                         @Field("price") float price,        //限价单价格
+                                        @Field("symbol") String symbol,
+                                        @Field("type") String type          ////交易类型Okcoin.Trade
+    );
+
+    @POST("/api/v1/trade.do")
+        // 用户下单     市价交易
+    Observable<TradeResponse> makeTrade(@Field("amount") float amount,      //交易数量
                                         @Field("symbol") String symbol,
                                         @Field("type") String type          ////交易类型Okcoin.Trade
     );
 
     @POST("/api/v1/cancel_order.do")
         //取消订单
-    Observable<CancelTradeResp> cancelTrade(@Field("api_key") String apiKey,
-                                            @Field("amount") float amount,      //交易数量
-                                            @Field("price") float price,        //限价单价格
-                                            @Field("sign") String sign,         //请求参数签名
-                                            @Field("symbol") String symbol,
-                                            @Field("type") String type          ////交易类型Okcoin.Trade
+    Observable<CancelTradeResp> cancelTrade(@Field("symbol") String symbol,
+                                            @Field("order_id") String orderId          ////交易类型Okcoin.Trade
     );
 
     @POST("/api/v1/order_info.do")
-    Observable<CancelTradeResp> fetchOrderInfo(@Field("api_key") String apiKey,
-                                               @Field("order_id") String order_id,
-                                               @Field("sign") String sign,
-                                               @Field("symbol") String symbol
+    Observable<OrderData> fetchOrderInfo(@Field("order_id") String order_id,
+                                         @Field("symbol") String symbol
     );
 
 }

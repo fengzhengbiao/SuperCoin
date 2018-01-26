@@ -1,4 +1,6 @@
-package com.leapord.supercoin.network;
+package com.leapord.supercoin.observer;
+
+import android.util.Log;
 
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
@@ -11,22 +13,21 @@ import io.reactivex.disposables.Disposable;
  */
 
 public abstract class CoinObserver<T> implements Observer<T> {
+    public static final String TAG = "CoinObserver";
 
     @Override
     public void onSubscribe(Disposable d) {
-        com.orhanobut.logger.Logger.d("CoinObserver :   onSubscribe");
+        Log.i(TAG, "onSubscribe");
     }
-
 
 
     @Override
     public void onError(Throwable e) {
-        com.orhanobut.logger.Logger.d("CoinObserver :   onError");
-        com.orhanobut.logger.Logger.d("CoinObserver :  " + e.toString());
+        Log.e(TAG, "onError: " + e.toString());
     }
 
     @Override
     public void onComplete() {
-        com.orhanobut.logger.Logger.d("CoinObserver :   onComplete");
+        Log.i(TAG, "onComplete");
     }
 }

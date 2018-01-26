@@ -64,6 +64,9 @@ public class HttpUtil {
                     params.put(key, value);
                     newFormBody.addEncoded(key, value);
                 }
+                if (original.url().toString().startsWith(BASE_URL)) {
+                    newFormBody.addEncoded("api_key", OkCoin.API.API_KEY);
+                }
                 String mysignV1 = MD5Util.buildMysignV1(params, OkCoin.API.SECRET_KEY);
                 newFormBody.addEncoded("sign", mysignV1);
                 requestBuilder.method(original.method(), newFormBody.build());
