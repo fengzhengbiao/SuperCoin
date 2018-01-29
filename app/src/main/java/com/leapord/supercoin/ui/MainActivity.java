@@ -6,35 +6,42 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.view.View;
 
 import com.leapord.supercoin.R;
-import com.leapord.supercoin.app.Const;
 import com.leapord.supercoin.entity.http.OkCoin;
 import com.leapord.supercoin.service.KeepAliveService;
 import com.leapord.supercoin.service.LooperService;
-import com.leapord.supercoin.util.SpUtils;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private RecyclerView mRecyclerView;
+public class MainActivity extends AppCompatActivity {
+
+
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
+            = item -> {
+                switch (item.getItemId()) {
+                    case R.id.navigation_home:
+
+                        return true;
+                    case R.id.navigation_dashboard:
+
+                        return true;
+                    case R.id.navigation_notifications:
+
+                        return true;
+                }
+                return false;
+            };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mRecyclerView = findViewById(R.id.rv_coins);
-        findViewById(R.id.btn_start).setOnClickListener(this);
-        findViewById(R.id.btn_stop).setOnClickListener(this);
-
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        startLooper();
+        BottomNavigationView navigation = findViewById(R.id.navigation);
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
     }
-
 
     public void startLooper() {
         Intent intent = new Intent(this, LooperService.class);
@@ -52,18 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         }
     }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btn_start:
-                SpUtils.putBoolean(Const.AUTO_TRANSACTION, true);
-                break;
-            case R.id.btn_stop:
-                SpUtils.putBoolean(Const.AUTO_TRANSACTION, false);
-                break;
-//                TradeManager.purchase(OkCoin.USDT.SWFTC, TradeManager.WAREHOUSE.HALF, new double[]{0.0070, 0.0069}, 2);
+    //                TradeManager.purchase(OkCoin.USDT.SWFTC, TradeManager.WAREHOUSE.HALF, new double[]{0.0070, 0.0069}, 2);
 //                TradeManager.sellCoins(OkCoin.USDT.LIGHT,TradeManager.WAREHOUSE.HALF,new double[]{0.0070, 0.0069},2 );
-        }
-    }
+
 }

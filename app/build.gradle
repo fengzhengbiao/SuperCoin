@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.greenrobot.greendao' // apply plugin
+apply plugin: 'com.jakewharton.butterknife'
 
 android {
     compileSdkVersion 26
@@ -54,4 +55,6 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:26.1.0'
     implementation files('libs/commons-math3-3.6.1.jar')
     implementation files('libs/commons-math3-3.6.1-tools.jar')
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
+    compile 'com.jakewharton:butterknife:8.4.0'
 }

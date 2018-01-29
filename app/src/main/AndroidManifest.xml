@@ -38,10 +38,6 @@
                 <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
             </intent-filter>
         </receiver>
-
-        <activity
-            android:name=".ui.Main2Activity"
-            android:label="@string/title_activity_main2"></activity>
     </application>
 
 </manifest>
