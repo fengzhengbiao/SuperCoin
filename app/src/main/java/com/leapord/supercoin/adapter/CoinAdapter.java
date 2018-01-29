@@ -44,15 +44,7 @@ public class CoinAdapter extends RecyclerView.Adapter<CoinAdapter.CoinHolder> {
 
         public CoinHolder(View itemView) {
             super(itemView);
-            tvCoinName = itemView.findViewById(R.id.tv_coin_name);
-            tvCurrentBuy = itemView.findViewById(R.id.tv_current_buy);
-            tvCurrentSell = itemView.findViewById(R.id.tv_current_sell);
-            tvSuggestionAction = itemView.findViewById(R.id.tv_suggestion_action);
 
-            tvIncrease = itemView.findViewById(R.id.tv_increase_time);
-            tvDecline = itemView.findViewById(R.id.tv_decline);
-            tvIncreaseTime2 = itemView.findViewById(R.id.tv_increase_time2);
-            tvDecline2 = itemView.findViewById(R.id.tv_decline2);
 
         }
     }

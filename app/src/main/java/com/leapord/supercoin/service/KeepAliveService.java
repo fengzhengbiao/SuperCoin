@@ -20,7 +20,6 @@ import com.orhanobut.logger.Logger;
  */
 
 public class KeepAliveService extends JobService {
-    private int kJobId = 0;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -56,7 +55,7 @@ public class KeepAliveService extends JobService {
     }
 
     public JobInfo getJobInfo() {
-        JobInfo.Builder builder = new JobInfo.Builder(kJobId++, new ComponentName(this, KeepAliveService.class));
+        JobInfo.Builder builder = new JobInfo.Builder(1, new ComponentName(this, KeepAliveService.class));
         builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_NONE);
         builder.setPersisted(true);
         builder.setRequiresCharging(false);

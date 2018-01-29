@@ -48,7 +48,7 @@ public class LooperService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Observable.interval(0, 10, TimeUnit.SECONDS)
+        Observable.interval(0, 60, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(aLong -> {

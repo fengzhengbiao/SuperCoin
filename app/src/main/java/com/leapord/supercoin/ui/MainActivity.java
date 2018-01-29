@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mRecyclerView = findViewById(R.id.rv_coins);
         findViewById(R.id.btn_start).setOnClickListener(this);
         findViewById(R.id.btn_stop).setOnClickListener(this);
-        findViewById(R.id.btn_buy).setOnClickListener(this);
+
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         startLooper();
     }
@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                     .build();
             jobScheduler.schedule(jobInfo);
+
         }
     }
 
@@ -61,10 +62,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btn_stop:
                 SpUtils.putBoolean(Const.AUTO_TRANSACTION, false);
                 break;
-            case R.id.btn_buy:
 //                TradeManager.purchase(OkCoin.USDT.SWFTC, TradeManager.WAREHOUSE.HALF, new double[]{0.0070, 0.0069}, 2);
 //                TradeManager.sellCoins(OkCoin.USDT.LIGHT,TradeManager.WAREHOUSE.HALF,new double[]{0.0070, 0.0069},2 );
-                break;
         }
     }
 }
