@@ -1,4 +1,4 @@
-package com.leapord.supercoin.entity;
+package com.leapord.supercoin.entity.http;
 
 import java.util.Map;
 

@@ -1,21 +1,21 @@
-package com.leapord.supercoin.entity;
-
-import java.util.List;
+package com.leapord.supercoin.entity.http;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /*********************************************
  *  Author  JokerFish 
- *  Create   2018/1/22
+ *  Create   2018/1/26
  *  Description 
  *  Email fengzhengbiao@vcard100.com
  **********************************************/
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class LiveData {
-    private List<double[]> kLineData;
-    private Depth depth;
+@AllArgsConstructor
+@Builder
+public class TradeCancleResp {
+    private String success;
+    private String error;
 }

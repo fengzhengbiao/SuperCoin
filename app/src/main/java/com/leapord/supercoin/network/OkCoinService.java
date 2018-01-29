@@ -1,12 +1,12 @@
 package com.leapord.supercoin.network;
 
-import com.leapord.supercoin.entity.BbTicker;
-import com.leapord.supercoin.entity.CancelTradeResp;
-import com.leapord.supercoin.entity.Depth;
-import com.leapord.supercoin.entity.OrderData;
-import com.leapord.supercoin.entity.Trade;
-import com.leapord.supercoin.entity.TradeResponse;
-import com.leapord.supercoin.entity.UserInfo;
+import com.leapord.supercoin.entity.http.BbTicker;
+import com.leapord.supercoin.entity.http.CancelTradeResp;
+import com.leapord.supercoin.entity.http.Depth;
+import com.leapord.supercoin.entity.http.OrderData;
+import com.leapord.supercoin.entity.http.Trade;
+import com.leapord.supercoin.entity.http.TradeResponse;
+import com.leapord.supercoin.entity.http.UserInfo;
 
 import java.util.List;
 
@@ -40,9 +40,8 @@ public interface OkCoinService {
     Observable<List<double[]>> fetchKline(@Query("symbol") String symbol, @Query("type") String type);
 
     //    用于OKEx快速进行币币交易
-    @FormUrlEncoded
     @POST("/api/v1/userinfo.do")
-    Observable<UserInfo> fetchUserInfo(@Field("api_key") String apiKey);
+    Observable<UserInfo> fetchUserInfo();
 
     @FormUrlEncoded
     @POST("/api/v1/trade.do")

@@ -8,8 +8,8 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
-import com.leapord.supercoin.entity.LiveData;
-import com.leapord.supercoin.entity.OkCoin;
+import com.leapord.supercoin.entity.http.LiveData;
+import com.leapord.supercoin.entity.http.OkCoin;
 import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.KlineObserver;
 import com.leapord.supercoin.util.ToastUtis;

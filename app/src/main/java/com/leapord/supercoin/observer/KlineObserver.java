@@ -5,7 +5,7 @@ import android.util.Log;
 import com.leapord.supercoin.app.Const;
 import com.leapord.supercoin.core.Analyzer;
 import com.leapord.supercoin.core.TradeManager;
-import com.leapord.supercoin.entity.LiveData;
+import com.leapord.supercoin.entity.http.LiveData;
 import com.leapord.supercoin.util.SpUtils;
 import com.leapord.supercoin.util.TimeUtils;
 import com.orhanobut.logger.Logger;

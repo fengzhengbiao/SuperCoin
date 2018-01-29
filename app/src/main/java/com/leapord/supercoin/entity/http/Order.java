@@ -1,4 +1,4 @@
-package com.leapord.supercoin.entity;
+package com.leapord.supercoin.entity.http;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,9 +15,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Order {
 
-    public Order(Long order_id) {
-        this.order_id = order_id;
-    }
 
     /**
      * amount : 0.1     委托数量

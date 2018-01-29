@@ -1,4 +1,4 @@
-package com.leapord.supercoin.entity;
+package com.leapord.supercoin.entity.http;
 
 import lombok.Data;
 
@@ -9,6 +9,7 @@ import lombok.Data;
  * @email fengzb0216@sina.com
  */
 @Data
-public class InfoBean {
-    private FundsBean funds;
+public class BbTicker {
+  private String date;
+  private BbTicker ticker;
 }

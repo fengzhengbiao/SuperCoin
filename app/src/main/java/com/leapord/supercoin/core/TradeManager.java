@@ -3,16 +3,17 @@ package com.leapord.supercoin.core;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.leapord.supercoin.entity.CancelTradeResp;
-import com.leapord.supercoin.entity.LiveData;
-import com.leapord.supercoin.entity.OkCoin;
-import com.leapord.supercoin.entity.Order;
+import com.leapord.supercoin.app.SuperCoinApplication;
+import com.leapord.supercoin.entity.dao.Trade;
+import com.leapord.supercoin.entity.dao.TradeDao;
+import com.leapord.supercoin.entity.http.LiveData;
+import com.leapord.supercoin.entity.http.OkCoin;
+import com.leapord.supercoin.entity.http.Order;
 import com.leapord.supercoin.network.HttpUtil;
-import com.leapord.supercoin.observer.CoinObserver;
 import com.leapord.supercoin.observer.TradeObserver;
-import com.leapord.supercoin.util.SpUtils;
 import com.leapord.supercoin.util.ToastUtis;
 
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
@@ -94,12 +95,12 @@ public class TradeManager {
      */
     public static void purchase(String symbol, WAREHOUSE warehouse, double[] prices, int priority) {
         HttpUtil.createRequest()
-                .fetchUserInfo(OkCoin.API.API_KEY)
+                .fetchUserInfo()
                 .filter(userInfo -> userInfo.getResult() && userInfo.getInfo().getFunds() != null)     //获取个人信息成功
                 .filter(userInfo -> {
                     String coin_type = getCoinZone(symbol);
                     double remainCoin = Double.parseDouble(userInfo.getInfo().getFunds().getFree().get(coin_type));
-                    if (remainCoin > 0.001) {
+                    if (remainCoin < 0.001) {
                         ToastUtis.showToast("coin not enough：" + coin_type);
                         Log.i(TAG, "coin not enough：" + coin_type);
                     } else {
@@ -150,7 +151,7 @@ public class TradeManager {
      */
     public static void sellCoins(String symbol, WAREHOUSE warehouse, double[] prices, int priority) {
         HttpUtil.createRequest()
-                .fetchUserInfo(OkCoin.API.API_KEY)
+                .fetchUserInfo()
                 .filter(userInfo -> userInfo.getResult() && userInfo.getInfo().getFunds() != null)     //获取个人信息成功
                 .filter(userInfo -> {
                     String coin_type = getCoinName(symbol);
@@ -184,6 +185,7 @@ public class TradeManager {
                             amount = (float) (coinAmount / price);
                             break;
                     }
+                    amount = 100;
                     Log.i(TAG, "sell: " + coin_type + "  amount:" + amount + "  price:" + price);
                     return HttpUtil.createRequest()
                             .makeTrade(amount, price,
@@ -200,101 +202,74 @@ public class TradeManager {
      * @param symbol
      * @param orderId 取消订单  针对单个订单
      */
-    public void cancelTrade(String symbol, String orderId) {
+    public static void cancelTrade(String symbol, String orderId) {
+        Order order = new Order();
+        order.setOrder_id(Long.parseLong(orderId));
         HttpUtil.createRequest()
                 .fetchOrderInfo("-1", symbol)
-                .filter(oderInfo -> oderInfo.getOrders().contains(new Order(Long.parseLong(orderId))))     //获取个人信息成功
+                .filter(oderInfo -> oderInfo.getOrders().contains(order))     //获取个人信息成功
                 .flatMap(orderData -> HttpUtil.createRequest().cancelTrade(symbol, orderId))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new CoinObserver<CancelTradeResp>() {
-                    @Override
-                    public void onNext(CancelTradeResp value) {
-                        String success = value.getSuccess();
-                        if (success.contains(",")) {
-                            String[] split = success.split(",");
-                            String string = SpUtils.getString(symbol, "");
-                            if (string.contains(",")) {
-                                String[] split1 = string.split(",");
-                                StringBuffer buffer = new StringBuffer();
-                                for (int i = 0; i < split1.length; i++) {
-                                    if (isOldOrder(split1[i], split)) {
-                                        buffer.append(split1[i]);
-                                        if (i != split1.length - 1) {
-                                            buffer.append(",");
-                                        }
-                                    }
-                                }
-                                SpUtils.putString(symbol, buffer.toString());
-                            } else {
-                                if (isOldOrder(string, split)) {
-                                    SpUtils.remove(symbol);
-                                }
-                            }
-                        } else {
-                            String string = SpUtils.getString(symbol, "");
-                            if (string.contains(",")) {
-                                String[] split = string.split(",");
-                                StringBuffer buffer = new StringBuffer();
-                                for (int i = 0; i < split.length; i++) {
-                                    if (!isOldOrder(success, split)) {
-                                        buffer.append(split[i]);
-                                        if (i != split.length - 1) {
-                                            buffer.append("，");
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                .subscribe(value -> {
+                    TradeDao tradeDao = SuperCoinApplication.INSTANCE.getDaoSession().getTradeDao();
+                    Trade trade = new Trade();
+                    trade.setSymbol(symbol);
+                    trade.setOrderId(orderId);
+                    trade.setSellType(OkCoin.Trade.CANCEL);
+                    trade.setStatus(TextUtils.isEmpty(value.getError()));
+                    tradeDao.save(trade);
+
                 });
     }
+
 
     /**
      * 取消所有挂单
      */
-    public void cancelAllTrade(String symbol) {
-//        HttpUtil.createRequest()
-//                .fetchOrderInfo("-1", symbol)
-//                .flatMap(new Function<OrderData, ObservableSource<OrderData>>() {
-//                    @Override
-//                    public ObservableSource<OrderData> apply(OrderData orderData) throws Exception {
-//                        return null;
-//                    }
-//                })
-//                .filter(oderInfo -> oderInfo.getOrders().contains(new Order(Long.parseLong(orderId))))     //获取个人信息成功
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe();
+    public static void cancelAllTrade(String symbol) {
+        HttpUtil.createRequest()
+                .fetchOrderInfo("-1", symbol)
+                .flatMap(orderData -> Observable.fromIterable(orderData.getOrders()))
+                .filter(orderData -> orderData.getStatus() == 0)     //获取个人信息成功
+                .flatMap(orderData -> HttpUtil.createRequest().cancelTrade(symbol, String.valueOf(orderData.getOrder_id())))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(cancelTradeResp -> {
+                    String successOrders = cancelTradeResp.getSuccess();
+                    TradeDao tradeDao = SuperCoinApplication.INSTANCE.getDaoSession().getTradeDao();
+                    if (successOrders.contains(",")) {
+                        String[] split = successOrders.trim().split(",");
+                        for (int i = 0; i < split.length; i++) {
+                            Trade trade = new Trade();
+                            trade.setSymbol(symbol);
+                            trade.setOrderId(split[i]);
+                            trade.setSellType(OkCoin.Trade.CANCEL);
+                            trade.setStatus(true);
+                            tradeDao.save(trade);
+                        }
+                    } else {
+                        Trade trade = new Trade();
+                        trade.setSymbol(symbol);
+                        trade.setOrderId(successOrders);
+                        trade.setSellType(OkCoin.Trade.CANCEL);
+                        trade.setStatus(true);
+                        tradeDao.save(trade);
+                    }
+                });
     }
 
-
-    /**
-     * 判断老订单里面是否有这个
-     *
-     * @param orderId
-     * @param oldOrders
-     * @return
-     */
-    public static boolean isOldOrder(String orderId, String... oldOrders) {
-        for (int i = 0; i < oldOrders.length; i++) {
-            if (TextUtils.equals(oldOrders[i], orderId)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     public static String getCoinName(String symbol) {
         return symbol.substring(0, symbol.indexOf('_'));
     }
 
     public static String getCoinZone(String symbol) {
-        return symbol.substring(symbol.indexOf('-') + 1);
+        return symbol.substring(symbol.indexOf('_') + 1);
     }
 
 
-    enum WAREHOUSE {
+    public enum WAREHOUSE {
         ONE_FOUR, HALF, FULL, THREE_FOUR
     }
 }

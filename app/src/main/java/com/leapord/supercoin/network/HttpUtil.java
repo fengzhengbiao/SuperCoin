@@ -4,7 +4,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.leapord.supercoin.app.SuperCoinApplication;
-import com.leapord.supercoin.entity.OkCoin;
+import com.leapord.supercoin.entity.http.OkCoin;
 import com.leapord.supercoin.util.MD5Util;
 
 import java.io.File;
@@ -38,7 +38,7 @@ public class HttpUtil {
 
     //设置缓存目录
     private static final File cacheDirectory =
-            new File(SuperCoinApplication.CONTEXT.getCacheDir().getAbsolutePath(), "SuperCoinCache");
+            new File(SuperCoinApplication.INSTANCE.getCacheDir().getAbsolutePath(), "SuperCoinCache");
     private static Cache cache = new Cache(cacheDirectory, 10 * 1024 * 1024);
 
     //请求拦截
@@ -51,25 +51,32 @@ public class HttpUtil {
                     .newBuilder()
                     ///由于所有网络请求都是post json的方式,因此此处添加了公共头
                     ///用户可以根据自己的业务自行修改
-                    .addHeader("Content-Type", "application/x-www-form-urlencoded");
+                    .addHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
             String method = chain.request().method();
             if (TextUtils.equals("POST", method)) {
-                FormBody formBody = (FormBody) original.body();
-                int size = formBody.size();
+                FormBody formBody = null;
+                if (original.body() instanceof FormBody) {
+                    formBody = (FormBody) original.body();
+                }
                 Map<String, String> params = new HashMap<>();
                 FormBody.Builder newFormBody = new FormBody.Builder();
-                for (int i = 0; i < size; i++) {
-                    String key = formBody.encodedName(i);
-                    String value = formBody.encodedValue(i);
-                    params.put(key, value);
-                    newFormBody.addEncoded(key, value);
-                }
                 if (original.url().toString().startsWith(BASE_URL)) {
                     newFormBody.addEncoded("api_key", OkCoin.API.API_KEY);
+                    params.put("api_key", OkCoin.API.API_KEY);
+                }
+                if (formBody != null) {
+                    int size = formBody.size();
+                    for (int i = 0; i < size; i++) {
+                        String key = formBody.encodedName(i);
+                        String value = formBody.encodedValue(i);
+                        params.put(key, value);
+                        newFormBody.addEncoded(key, value);
+                    }
                 }
                 String mysignV1 = MD5Util.buildMysignV1(params, OkCoin.API.SECRET_KEY);
                 newFormBody.addEncoded("sign", mysignV1);
                 requestBuilder.method(original.method(), newFormBody.build());
+
             }
 
             return chain.proceed(requestBuilder.build());

@@ -2,7 +2,7 @@ package com.leapord.supercoin.core;
 
 import android.util.Log;
 
-import com.leapord.supercoin.entity.Depth;
+import com.leapord.supercoin.entity.http.Depth;
 import com.leapord.supercoin.util.TimeUtils;
 
 import org.apache.commons.math3.fitting.PolynomialCurveFitter;
@@ -217,10 +217,22 @@ public class Analyzer {
      */
     public static boolean isContinuousIncrease(List<double[]> kNums, int continuCount) {
         int size = kNums.size();
-        for (int i = size - 1; i > size - 1 - continuCount; i--) {
+        int endIndex = size - 1 - continuCount;
+        for (int i = size - 1; i > endIndex; i--) {
             double[] kPoint = kNums.get(i);
             if (kPoint[4] < kPoint[1]) {
-                return false;
+                if (i == size - 1) {
+                    return false;
+                } else {
+                    double[] kPointPre = kNums.get(i);
+                    double diffPre = kPointPre[4] - kPoint[1];
+                    double diff = kPoint[1] - kPoint[4];
+                    if (diffPre > 0 && diffPre > 10 * diff) {
+                        endIndex--;
+                        continue;
+                    }
+                    return false;
+                }
             }
         }
         return true;
@@ -235,10 +247,22 @@ public class Analyzer {
      */
     public static boolean isContinuousDecrease(List<double[]> kNums, int continuCount) {
         int size = kNums.size();
-        for (int i = size - 1; i > size - 1 - continuCount; i--) {
+        int endIndex = size - 1 - continuCount;
+        for (int i = size - 1; i > endIndex; i--) {
             double[] kPoint = kNums.get(i);
             if (kPoint[4] > kPoint[1]) {
-                return false;
+                if (i == size - 1) {
+                    return false;
+                } else {
+                    double[] kPointPre = kNums.get(i);
+                    double diffPre = kPointPre[1] - kPoint[4];
+                    double diff = kPoint[4] - kPoint[1];
+                    if (diffPre < 0 && diffPre > 10 * diff) {
+                        endIndex--;
+                        continue;
+                    }
+                    return false;
+                }
             }
         }
         return true;

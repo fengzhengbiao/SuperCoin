@@ -1,21 +1,21 @@
-package com.leapord.supercoin.entity;
+package com.leapord.supercoin.entity.http;
+
+import java.util.List;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /*********************************************
  *  Author  JokerFish 
- *  Create   2018/1/26
+ *  Create   2018/1/22
  *  Description 
  *  Email fengzhengbiao@vcard100.com
  **********************************************/
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class TradeCancleResp {
-    private String success;
-    private String error;
+@NoArgsConstructor
+public class LiveData {
+    private List<double[]> kLineData;
+    private Depth depth;
 }

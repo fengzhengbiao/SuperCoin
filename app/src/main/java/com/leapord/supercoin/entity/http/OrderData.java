@@ -1,4 +1,6 @@
-package com.leapord.supercoin.entity;
+package com.leapord.supercoin.entity.http;
+
+import java.util.List;
 
 import lombok.Data;
 
@@ -9,7 +11,7 @@ import lombok.Data;
  * @email fengzb0216@sina.com
  */
 @Data
-public class TradeResponse {
+public class OrderData {
     private boolean result;
-    private String order_id;
+    private List<Order> orders;
 }

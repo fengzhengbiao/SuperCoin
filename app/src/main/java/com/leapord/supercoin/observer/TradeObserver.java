@@ -1,10 +1,9 @@
 package com.leapord.supercoin.observer;
 
-import android.text.TextUtils;
-
-import com.leapord.supercoin.entity.OkCoin;
-import com.leapord.supercoin.entity.TradeResponse;
-import com.leapord.supercoin.util.SpUtils;
+import com.leapord.supercoin.app.SuperCoinApplication;
+import com.leapord.supercoin.entity.dao.Trade;
+import com.leapord.supercoin.entity.dao.TradeDao;
+import com.leapord.supercoin.entity.http.TradeResponse;
 
 /*********************************************
  *  Author  JokerFish 
@@ -24,33 +23,12 @@ public class TradeObserver extends CoinObserver<TradeResponse> {
 
     @Override
     public void onNext(TradeResponse value) {
-        if (TextUtils.equals(tradeType, OkCoin.Trade.BUY)) {
-            if (value.isResult()) {
-                String orderIds = SpUtils.getString(symbol, "");
-                if (TextUtils.isEmpty(orderIds)) {
-                    SpUtils.putString(symbol, value.getOrder_id());
-                } else {
-                    SpUtils.putString(symbol, orderIds + "," + value.getOrder_id());
-                }
-            }
-        } else {
-            if (value.isResult()) {
-                String orderIds = SpUtils.getString(symbol, "");
-                if (!TextUtils.isEmpty(orderIds)) {
-                    String[] split = orderIds.split(",");
-                    StringBuffer buffer = new StringBuffer();
-                    for (int i = 0; i < split.length; i++) {
-                        if (!TextUtils.equals(split[i], value.getOrder_id())) {
-                            if (i != split.length - 1) {
-                                buffer.append(split[i]);
-                            } else {
-                                buffer.append(split[i]);
-                                buffer.append(",");
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        TradeDao tradeDao = SuperCoinApplication.INSTANCE.getDaoSession().getTradeDao();
+        Trade trade = new Trade();
+        trade.setSymbol(symbol);
+        trade.setOrderId(value.getOrder_id());
+        trade.setSellType(tradeType);
+        trade.setStatus(value.isResult());
+        tradeDao.save(trade);
     }
 }

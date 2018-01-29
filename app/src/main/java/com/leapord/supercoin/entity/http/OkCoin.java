@@ -1,4 +1,4 @@
-package com.leapord.supercoin.entity;
+package com.leapord.supercoin.entity.http;
 
 /**
  * @author Biao
@@ -83,12 +83,14 @@ public interface OkCoin {
         String BUY_MARKET = "buy_market";
 
         String SELL_MARKET = "sell_market";
+
+        String CANCEL = "cancel";
     }
 
     interface API{
-        String API_KEY = "ad03fc60-64e7-4464-8806-cce98ba7fd07";
+        String API_KEY = "2c31b63a-9d64-4889-935c-25f319102832";
 
-        String SECRET_KEY = "E13734459A6ED1CF4F9BD871FED95323";
+        String SECRET_KEY = "241CFFFF941F14A3320DC5F9AC349955";
     }
 
 }

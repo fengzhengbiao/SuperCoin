@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.leapord.supercoin.R;
-import com.leapord.supercoin.entity.KlineAnalyzeInfo;
+import com.leapord.supercoin.entity.http.KlineAnalyzeInfo;
 
 import java.util.List;
 

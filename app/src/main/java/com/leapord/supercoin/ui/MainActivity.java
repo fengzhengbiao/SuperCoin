@@ -13,7 +13,7 @@ import android.view.View;
 
 import com.leapord.supercoin.R;
 import com.leapord.supercoin.app.Const;
-import com.leapord.supercoin.entity.OkCoin;
+import com.leapord.supercoin.entity.http.OkCoin;
 import com.leapord.supercoin.service.KeepAliveService;
 import com.leapord.supercoin.service.LooperService;
 import com.leapord.supercoin.util.SpUtils;
@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mRecyclerView = findViewById(R.id.rv_coins);
         findViewById(R.id.btn_start).setOnClickListener(this);
         findViewById(R.id.btn_stop).setOnClickListener(this);
+        findViewById(R.id.btn_buy).setOnClickListener(this);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         startLooper();
     }
@@ -59,6 +60,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.btn_stop:
                 SpUtils.putBoolean(Const.AUTO_TRANSACTION, false);
+                break;
+            case R.id.btn_buy:
+//                TradeManager.purchase(OkCoin.USDT.SWFTC, TradeManager.WAREHOUSE.HALF, new double[]{0.0070, 0.0069}, 2);
+//                TradeManager.sellCoins(OkCoin.USDT.LIGHT,TradeManager.WAREHOUSE.HALF,new double[]{0.0070, 0.0069},2 );
                 break;
         }
     }

@@ -11,4 +11,6 @@ public interface Const {
 
     String AUTO_TRANSACTION = "auto_buy_sell";
 
+    String TRADE_SYMBOL = "trade_symbol";
+
 }
