@@ -18,14 +18,11 @@ import lombok.NoArgsConstructor;
 public class KlineAnalyzeInfo {
 
     private String coinName;
-    private float sellPrice;
-    private float buyPrice;
+    private double sellPrice;
+    private double buyPrice;
     private String suggestionAction;
 
-    private float tendency;     //-1:下降,0：稳定,1上升
+    private int tendency;     //-1:下降,0：稳定,1上升
+    private long time;
 
-    private Long firstOrderIncreaseTime;        // 一阶上升时间
-    private Long firstOrderDecreaseTime;        //一阶下降时间
-    private Long secondOrderIncreaseTime;       //二阶上升时间
-    private Long secondOrderDecreaseTime;       //二阶下降时间
 }

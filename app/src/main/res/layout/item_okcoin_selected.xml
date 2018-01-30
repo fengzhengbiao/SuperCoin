@@ -9,76 +9,60 @@
     android:paddingStart="16dp"
     android:paddingTop="16dp">
 
+    <TextView
+        android:id="@+id/tv_coin_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SWFTC"
+        android:textColor="@color/colorPrimary"
+        android:textSize="22sp" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
         android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/tv_coin_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SWFTC"
-            android:textColor="@color/colorPrimary"
-            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/tv_current_buy"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
-            android:text="12.345"
+            android:text="买入价：12.345"
             android:textColor="@color/colorPurchase"
-            android:textSize="16sp" />
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/tv_current_sell"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:layout_weight="1"
-            android:text="34.34"
-            android:textColor="@color/colorSell"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/tv_action"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="20dp"
-            android:text="建议买入"
-            android:textSize="18sp" />
+            android:layout_marginStart="35dp"
+            android:text="买入价：34.34"
+            android:textColor="@color/colorSell"
+            android:textSize="14sp" />
+
     </LinearLayout>
 
 
     <TextView
-        android:id="@+id/tv_line_predicate2"
+        android:id="@+id/tv_depth"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/tv_coin_name"
-        android:layout_marginTop="10dp"
-        android:text="预测：" />
-
-    <TextView
-        android:id="@+id/tv_increase_time2"
-        android:layout_width="wrap_content"
         android:layout_marginLeft="30dp"
-        android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="预计上涨：  23:12:12"
+        android:text="深度趋势： 2"
         android:textColor="@color/colorPurchase"
         android:textSize="16sp" />
 
 
     <TextView
-        android:id="@+id/tv_increase_time2"
+        android:id="@+id/tv_time"
         android:layout_width="wrap_content"
-        android:layout_marginLeft="30dp"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
         android:layout_marginTop="10dp"
         android:text="预计上涨：  23:12:12"
         android:textColor="@color/colorPurchase"
         android:textSize="16sp" />
-
 
 </LinearLayout>

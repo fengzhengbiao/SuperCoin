@@ -168,12 +168,12 @@ public class Analyzer {
     }
 
     /**
-     * @param kNums    k线数据
-     * @param tendency k线
-     *                 上涨或者下降趋势
+     * @param kNums k线数据
+     *              <p>
+     *              上涨或者下降趋势
      * @return 返回转折点对应的时间
      */
-    public static long getPredicateTimeByNearPoint(List<double[]> kNums, int pointCount, int tendency) {
+    public static long getPredicateTimeByNearPoint(List<double[]> kNums, int pointCount) {
         int endIndex = kNums.size() - 1;
         WeightedObservedPoints points = new WeightedObservedPoints();
         for (int i = endIndex - pointCount; i < endIndex; i++) {

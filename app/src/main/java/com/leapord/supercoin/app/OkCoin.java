@@ -1,4 +1,4 @@
-package com.leapord.supercoin.entity.http;
+package com.leapord.supercoin.app;
 
 /**
  * @author Biao

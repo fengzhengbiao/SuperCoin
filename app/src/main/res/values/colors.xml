@@ -8,6 +8,7 @@
     <color name="colorPurchase">#45b10f</color>
     <color name="colorSell">#d72d21</color>
     <color name="colorBackground">#918988</color>
+    <color name="colorText">#3d3939</color>
 
 
 </resources>

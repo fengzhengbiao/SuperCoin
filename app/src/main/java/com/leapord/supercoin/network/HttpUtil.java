@@ -3,8 +3,8 @@ package com.leapord.supercoin.network;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.leapord.supercoin.app.SuperCoinApplication;
-import com.leapord.supercoin.entity.http.OkCoin;
+import com.leapord.supercoin.app.CoinApplication;
+import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.util.MD5Util;
 
 import java.io.File;
@@ -38,7 +38,7 @@ public class HttpUtil {
 
     //设置缓存目录
     private static final File cacheDirectory =
-            new File(SuperCoinApplication.INSTANCE.getCacheDir().getAbsolutePath(), "SuperCoinCache");
+            new File(CoinApplication.INSTANCE.getCacheDir().getAbsolutePath(), "SuperCoinCache");
     private static Cache cache = new Cache(cacheDirectory, 10 * 1024 * 1024);
 
     //请求拦截

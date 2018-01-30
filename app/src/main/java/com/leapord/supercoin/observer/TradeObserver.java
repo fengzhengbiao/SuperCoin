@@ -1,9 +1,12 @@
 package com.leapord.supercoin.observer;
 
-import com.leapord.supercoin.app.SuperCoinApplication;
+import com.leapord.supercoin.app.CoinApplication;
 import com.leapord.supercoin.entity.dao.Trade;
 import com.leapord.supercoin.entity.dao.TradeDao;
+import com.leapord.supercoin.entity.event.TradeChangeEvent;
 import com.leapord.supercoin.entity.http.TradeResponse;
+
+import org.greenrobot.eventbus.EventBus;
 
 /*********************************************
  *  Author  JokerFish 
@@ -23,12 +26,13 @@ public class TradeObserver extends CoinObserver<TradeResponse> {
 
     @Override
     public void onNext(TradeResponse value) {
-        TradeDao tradeDao = SuperCoinApplication.INSTANCE.getDaoSession().getTradeDao();
+        TradeDao tradeDao = CoinApplication.INSTANCE.getDaoSession().getTradeDao();
         Trade trade = new Trade();
         trade.setSymbol(symbol);
         trade.setOrderId(value.getOrder_id());
         trade.setSellType(tradeType);
         trade.setStatus(value.isResult());
         tradeDao.save(trade);
+        EventBus.getDefault().post(new TradeChangeEvent(tradeType, symbol));
     }
 }

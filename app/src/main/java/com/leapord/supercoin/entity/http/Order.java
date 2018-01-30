@@ -49,4 +49,23 @@ public class Order {
         return order_id == order.order_id;
     }
 
+    @Override
+    public int hashCode() {
+        int result;
+        long temp;
+        temp = Double.doubleToLongBits(amount);
+        result = (int) (temp ^ (temp >>> 32));
+        result = 31 * result + avg_price;
+        result = 31 * result + (int) (create_date ^ (create_date >>> 32));
+        temp = Double.doubleToLongBits(deal_amount);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + (order_id != null ? order_id.hashCode() : 0);
+        result = 31 * result + (orders_id != null ? orders_id.hashCode() : 0);
+        temp = Double.doubleToLongBits(price);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + status;
+        result = 31 * result + (symbol != null ? symbol.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        return result;
+    }
 }

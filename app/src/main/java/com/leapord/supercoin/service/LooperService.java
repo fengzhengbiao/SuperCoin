@@ -7,10 +7,12 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 
+import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.entity.http.LiveData;
-import com.leapord.supercoin.entity.http.OkCoin;
 import com.leapord.supercoin.network.HttpUtil;
+import com.leapord.supercoin.observer.CoinObserver;
 import com.leapord.supercoin.observer.KlineObserver;
 import com.leapord.supercoin.util.ToastUtis;
 import com.orhanobut.logger.Logger;
@@ -21,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 
@@ -32,9 +35,10 @@ import io.reactivex.schedulers.Schedulers;
  */
 
 public class LooperService extends Service {
-    private final static int GRAY_SERVICE_ID = 1001;
+    private final static int GRAY_SERVICE_ID = 1;
     private String PERIOD = OkCoin.TimePeriod.THREE_MIN;
     private List<String> SYMBOLS = new ArrayList<>();
+    private Disposable mDisposiable;
 
     public LooperService() {
     }
@@ -48,18 +52,29 @@ public class LooperService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.i("LooperService", "onCreate: 服务启动");
+        ToastUtis.showToast("服务已开启");
         Observable.interval(0, 60, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
                 .subscribeOn(AndroidSchedulers.mainThread())
-                .subscribe(aLong -> {
-                    for (String symbol : SYMBOLS) {
-                        Logger.d("更新数据：" + symbol);
-                        Observable.zip(HttpUtil.createRequest().fetchKline(symbol, PERIOD),
-                                HttpUtil.createRequest().fetchDepth(symbol),
-                                (lists, depth) -> new LiveData(lists, depth))
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(KlineObserver.getObserver(symbol));
+                .subscribe(new CoinObserver<Long>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        super.onSubscribe(d);
+                        mDisposiable = d;
+                    }
+
+                    @Override
+                    public void onNext(Long value) {
+                        for (String symbol : SYMBOLS) {
+                            Logger.d("更新数据：" + symbol);
+                            Observable.zip(HttpUtil.createRequest().fetchKline(symbol, PERIOD),
+                                    HttpUtil.createRequest().fetchDepth(symbol),
+                                    (lists, depth) -> new LiveData(lists, depth))
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(KlineObserver.getObserver(symbol));
+                        }
                     }
                 });
     }
@@ -86,20 +101,23 @@ public class LooperService extends Service {
         } else {
             Logger.d("intent=null");
         }
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            //API < 18 ，此方法能有效隐藏Notification上的图标
-            startForeground(GRAY_SERVICE_ID, new Notification());
-        } else {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            //API >18 ，此方法能有效隐藏Notification上的图标
             Intent innerIntent = new Intent(this, GrayInnerService.class);
             startService(innerIntent);
-            startForeground(GRAY_SERVICE_ID, new Notification());
         }
-
+        startForeground(GRAY_SERVICE_ID, new Notification());
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
+        if (!mDisposiable.isDisposed()) {
+            mDisposiable.dispose();
+            Log.i("LooperService", "onDestroy: dispose");
+        }
+        Log.i("LooperService", "onDestroy: 服务启动");
+        ToastUtis.showToast("服务已关闭");
         super.onDestroy();
     }
 

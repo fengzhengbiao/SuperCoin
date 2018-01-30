@@ -20,9 +20,9 @@ import com.orhanobut.logger.PrettyFormatStrategy;
  * @email fengzb0216@sina.com
  */
 
-public class SuperCoinApplication extends Application {
+public class CoinApplication extends Application {
 
-    public static SuperCoinApplication INSTANCE;
+    public static CoinApplication INSTANCE;
     private DaoMaster.DevOpenHelper mHelper;
     private SQLiteDatabase db;
     private DaoMaster mDaoMaster;

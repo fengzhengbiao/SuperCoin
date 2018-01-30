@@ -3,11 +3,11 @@ package com.leapord.supercoin.core;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.leapord.supercoin.app.SuperCoinApplication;
+import com.leapord.supercoin.app.CoinApplication;
 import com.leapord.supercoin.entity.dao.Trade;
 import com.leapord.supercoin.entity.dao.TradeDao;
 import com.leapord.supercoin.entity.http.LiveData;
-import com.leapord.supercoin.entity.http.OkCoin;
+import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.entity.http.Order;
 import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.TradeObserver;
@@ -42,12 +42,14 @@ public class TradeManager {
             switch ((int) tendencyByKline[0]) {
                 case 2:    //立即买
                     Log.e(TAG, "autoTrade: purchase " + mSymbol + "---" + System.currentTimeMillis());
+                    purchase(mSymbol, WAREHOUSE.FULL, Analyzer.getPriceFromDepth(value.getDepth()), 1);
                     break;
                 case 1:
                 case -1:
                     if (tendencyByKline[3] < 0 && Analyzer.isContinuousIncrease(value.getKLineData(), 3)) {
                         // 下跌回转点
                         Log.e(TAG, "autoTrade: purchase " + mSymbol + "---" + System.currentTimeMillis());
+                        purchase(mSymbol, WAREHOUSE.HALF, Analyzer.getPriceFromDepth(value.getDepth()), 2);
                     } else if (tendencyByKline[3] < 0) {
                         Log.i(TAG, "autoTrade:" + mSymbol + " match many pruchase rules");
                     } else if (Analyzer.isContinuousDecrease(value.getKLineData(), 3)) {
@@ -64,12 +66,14 @@ public class TradeManager {
             switch ((int) tendencyByKline[0]) {
                 case -2:        //立即卖
                     Log.e(TAG, "autoTrade: sell " + mSymbol + "---" + System.currentTimeMillis());
+                    sellCoins(mSymbol, WAREHOUSE.FULL, Analyzer.getPriceFromDepth(value.getDepth()), 1);
                     break;
                 case 1:
                 case -1:
                     if (tendencyByKline[3] > 0 && Analyzer.isContinuousDecrease(value.getKLineData(), 3)) {
                         // 上涨回转点
                         Log.e(TAG, "autoTrade: sell " + mSymbol + "---" + System.currentTimeMillis());
+                        sellCoins(mSymbol, WAREHOUSE.HALF, Analyzer.getPriceFromDepth(value.getDepth()), 2);
                     } else if (tendencyByKline[3] > 0) {
                         Log.i(TAG, "autoTrade: " + mSymbol + " match many sell rules");
                     } else if (Analyzer.isContinuousDecrease(value.getKLineData(), 3)) {
@@ -212,7 +216,7 @@ public class TradeManager {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(value -> {
-                    TradeDao tradeDao = SuperCoinApplication.INSTANCE.getDaoSession().getTradeDao();
+                    TradeDao tradeDao = CoinApplication.INSTANCE.getDaoSession().getTradeDao();
                     Trade trade = new Trade();
                     trade.setSymbol(symbol);
                     trade.setOrderId(orderId);
@@ -237,7 +241,7 @@ public class TradeManager {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(cancelTradeResp -> {
                     String successOrders = cancelTradeResp.getSuccess();
-                    TradeDao tradeDao = SuperCoinApplication.INSTANCE.getDaoSession().getTradeDao();
+                    TradeDao tradeDao = CoinApplication.INSTANCE.getDaoSession().getTradeDao();
                     if (successOrders.contains(",")) {
                         String[] split = successOrders.trim().split(",");
                         for (int i = 0; i < split.length; i++) {
