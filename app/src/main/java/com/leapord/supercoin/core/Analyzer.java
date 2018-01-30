@@ -196,17 +196,49 @@ public class Analyzer {
      * @return
      */
     public static long getAutoPredicateTime(List<double[]> kNums, int tendency) {
+
+        double[] tendencyByKline = getTendencyByKline(kNums, 7);
+        if (tendency > 0) {
+            if (tendencyByKline[1] < tendencyByKline[2]) {
+                return System.currentTimeMillis() - 5 * 60 * 60 * 1000;
+            }
+        } else if (tendency > 0) {
+            if (tendencyByKline[1] > tendencyByKline[2]) {
+                return System.currentTimeMillis() - 5 * 60 * 60 * 1000;
+            }
+        } else {
+            return System.currentTimeMillis();
+        }
+        double[] tendencyByKline2 = getTendencyByKline(kNums, 9);
+        int observedPointCount = 9;
+        if (tendency > 0) {
+            while (tendencyByKline2[1] < tendencyByKline[1]) {
+                tendencyByKline = tendencyByKline2;
+                observedPointCount += 2;
+                tendencyByKline2 = getTendencyByKline(kNums, observedPointCount);
+            }
+        } else {
+            while (tendencyByKline2[1] > tendencyByKline[1]) {
+                tendencyByKline = tendencyByKline2;
+                observedPointCount += 2;
+                tendencyByKline2 = getTendencyByKline(kNums, observedPointCount);
+            }
+        }
         int endIndex = kNums.size() - 1;
         WeightedObservedPoints points = new WeightedObservedPoints();
-        for (int i = endIndex; i > 0; i--) {
-
+        for (int i = endIndex; i > endIndex - observedPointCount; i--) {
+            double[] kPoint = kNums.get(i);
+            points.add(kPoint[0], kPoint[1]);
         }
-
+        Log.i(TAG, "AutoPredicatePointCount: " + observedPointCount + "   K start:" + tendencyByKline2[1]);
         PolynomialCurveFitter fitter = PolynomialCurveFitter.create(2);
         double[] fit = fitter.fit(points.toList());
         return getPoleX(fit);
     }
 
+    public static boolean isNearZero(double k) {
+        return Math.abs(k) < 8E-7;
+    }
 
     /**
      * 是否连续几个点上涨

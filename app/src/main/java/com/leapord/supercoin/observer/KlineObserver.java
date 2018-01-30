@@ -52,7 +52,8 @@ public class KlineObserver extends CoinObserver<LiveData> {
         } else {
             Log.i(TAG, "onNext: auto trade closed");
         }
-        long time = Analyzer.getPredicateTimeByNearPoint(value.getKLineData(), 5);
+//        long time = Analyzer.getPredicateTimeByNearPoint(value.getKLineData(), 5);
+        long time = Analyzer.getAutoPredicateTime(value.getKLineData(), (int) tendencyByKline[3]);
         double[] priceFromDepth = Analyzer.getPriceFromDepth(value.getDepth());
         KlineAnalyzeInfo klineAnalyzeInfo = new KlineAnalyzeInfo();
         klineAnalyzeInfo.setCoinName(mSymbol);

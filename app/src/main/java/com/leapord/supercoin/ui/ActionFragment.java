@@ -53,7 +53,7 @@ public class ActionFragment extends BaseFragment implements CompoundButton.OnChe
     public void startLooper() {
         Intent intent = new Intent(getContext(), LooperService.class);
         ArrayList<String> symbols = new ArrayList<>();
-        symbols.add(OkCoin.USDT.OF);
+        symbols.add(OkCoin.USDT.BTC);
         intent.putStringArrayListExtra("SYMBOLS", symbols);
         getActivity().startService(intent);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -68,7 +68,7 @@ public class ActionFragment extends BaseFragment implements CompoundButton.OnChe
     }
 
 
-    @OnClick({R.id.btn_start, R.id.btn_stop, R.id.btn_sell, R.id.btn_buy})
+    @OnClick({R.id.btn_start, R.id.btn_stop, R.id.btn_add, R.id.btn_remove})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_start:
@@ -77,9 +77,9 @@ public class ActionFragment extends BaseFragment implements CompoundButton.OnChe
             case R.id.btn_stop:
                 stopLooper();
                 break;
-            case R.id.btn_buy:
-                break;
-            case R.id.btn_sell:
+            case R.id.btn_add:
+            case R.id.btn_remove:
+                ToastUtis.showToast("开发中");
                 break;
         }
     }

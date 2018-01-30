@@ -30,14 +30,14 @@
         android:text="关闭" />
 
     <Button
-        android:id="@+id/btn_buy"
+        android:id="@+id/btn_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:text="增加" />
 
     <Button
-        android:id="@+id/btn_sell"
+        android:id="@+id/btn_remove"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin"

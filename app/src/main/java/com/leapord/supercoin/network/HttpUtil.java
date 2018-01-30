@@ -42,46 +42,42 @@ public class HttpUtil {
     private static Cache cache = new Cache(cacheDirectory, 10 * 1024 * 1024);
 
     //请求拦截
-    private static Interceptor requestInterceptor = new Interceptor() {
-        @Override
-        public Response intercept(Chain chain) throws IOException {
-            Request original = chain.request();
-            //请求定制：添加请求头
-            Request.Builder requestBuilder = original
-                    .newBuilder()
-                    ///由于所有网络请求都是post json的方式,因此此处添加了公共头
-                    ///用户可以根据自己的业务自行修改
-                    .addHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-            String method = chain.request().method();
-            if (TextUtils.equals("POST", method)) {
-                FormBody formBody = null;
-                if (original.body() instanceof FormBody) {
-                    formBody = (FormBody) original.body();
-                }
-                Map<String, String> params = new HashMap<>();
-                FormBody.Builder newFormBody = new FormBody.Builder();
-                if (original.url().toString().startsWith(BASE_URL)) {
-                    newFormBody.addEncoded("api_key", OkCoin.API.API_KEY);
-                    params.put("api_key", OkCoin.API.API_KEY);
-                }
-                if (formBody != null) {
-                    int size = formBody.size();
-                    for (int i = 0; i < size; i++) {
-                        String key = formBody.encodedName(i);
-                        String value = formBody.encodedValue(i);
-                        params.put(key, value);
-                        newFormBody.addEncoded(key, value);
-                    }
-                }
-                String mysignV1 = MD5Util.buildMysignV1(params, OkCoin.API.SECRET_KEY);
-                newFormBody.addEncoded("sign", mysignV1);
-                requestBuilder.method(original.method(), newFormBody.build());
-
+    private static Interceptor requestInterceptor = chain -> {
+        Request original = chain.request();
+        //请求定制：添加请求头
+        Request.Builder requestBuilder = original
+                .newBuilder()
+                ///由于所有网络请求都是post json的方式,因此此处添加了公共头
+                ///用户可以根据自己的业务自行修改
+                .addHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+        String method = chain.request().method();
+        if (TextUtils.equals("POST", method)) {
+            FormBody formBody = null;
+            if (original.body() instanceof FormBody) {
+                formBody = (FormBody) original.body();
             }
+            Map<String, String> params = new HashMap<>();
+            FormBody.Builder newFormBody = new FormBody.Builder();
+            if (original.url().toString().startsWith(BASE_URL)) {
+                newFormBody.addEncoded("api_key", OkCoin.API.API_KEY);
+                params.put("api_key", OkCoin.API.API_KEY);
+            }
+            if (formBody != null) {
+                int size = formBody.size();
+                for (int i = 0; i < size; i++) {
+                    String key = formBody.encodedName(i);
+                    String value = formBody.encodedValue(i);
+                    params.put(key, value);
+                    newFormBody.addEncoded(key, value);
+                }
+            }
+            String mysignV1 = MD5Util.buildMysignV1(params, OkCoin.API.SECRET_KEY);
+            newFormBody.addEncoded("sign", mysignV1);
+            requestBuilder.method(original.method(), newFormBody.build());
 
-            return chain.proceed(requestBuilder.build());
         }
 
+        return chain.proceed(requestBuilder.build());
     };
 
     //响应拦截器

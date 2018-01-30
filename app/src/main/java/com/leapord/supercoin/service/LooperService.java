@@ -54,7 +54,7 @@ public class LooperService extends Service {
         super.onCreate();
         Log.i("LooperService", "onCreate: 服务启动");
         ToastUtis.showToast("服务已开启");
-        Observable.interval(0, 60, TimeUnit.SECONDS)
+        Observable.interval(0, 20, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(new CoinObserver<Long>() {
@@ -68,8 +68,8 @@ public class LooperService extends Service {
                     public void onNext(Long value) {
                         for (String symbol : SYMBOLS) {
                             Logger.d("更新数据：" + symbol);
-                            Observable.zip(HttpUtil.createRequest().fetchKline(symbol, PERIOD),
-                                    HttpUtil.createRequest().fetchDepth(symbol),
+                            Observable.zip(HttpUtil.createRequest().fetchKline(symbol, PERIOD).subscribeOn(Schedulers.io()),
+                                    HttpUtil.createRequest().fetchDepth(symbol).subscribeOn(Schedulers.io()),
                                     (lists, depth) -> new LiveData(lists, depth))
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())

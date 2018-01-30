@@ -41,14 +41,14 @@ public class TradeManager {
         if (tendencyByDepth == 1 || tendencyByDepth == 2) {     //卖家高价卖出较多  买家低价较少
             switch ((int) tendencyByKline[0]) {
                 case 2:    //立即买
-                    Log.e(TAG, "autoTrade: purchase " + mSymbol + "---" + System.currentTimeMillis());
+                    Log.i(TAG, "autoTrade: purchase " + mSymbol + "---" + System.currentTimeMillis());
                     purchase(mSymbol, WAREHOUSE.FULL, Analyzer.getPriceFromDepth(value.getDepth()), 1);
                     break;
                 case 1:
                 case -1:
                     if (tendencyByKline[3] < 0 && Analyzer.isContinuousIncrease(value.getKLineData(), 3)) {
                         // 下跌回转点
-                        Log.e(TAG, "autoTrade: purchase " + mSymbol + "---" + System.currentTimeMillis());
+                        Log.i(TAG, "autoTrade: purchase " + mSymbol + "---" + System.currentTimeMillis());
                         purchase(mSymbol, WAREHOUSE.HALF, Analyzer.getPriceFromDepth(value.getDepth()), 2);
                     } else if (tendencyByKline[3] < 0) {
                         Log.i(TAG, "autoTrade:" + mSymbol + " match many pruchase rules");
@@ -65,14 +65,14 @@ public class TradeManager {
         } else if (tendencyByDepth == -1 || tendencyByDepth == -2) {    //卖出
             switch ((int) tendencyByKline[0]) {
                 case -2:        //立即卖
-                    Log.e(TAG, "autoTrade: sell " + mSymbol + "---" + System.currentTimeMillis());
+                    Log.i(TAG, "autoTrade: sell " + mSymbol + "---" + System.currentTimeMillis());
                     sellCoins(mSymbol, WAREHOUSE.FULL, Analyzer.getPriceFromDepth(value.getDepth()), 1);
                     break;
                 case 1:
                 case -1:
                     if (tendencyByKline[3] > 0 && Analyzer.isContinuousDecrease(value.getKLineData(), 3)) {
                         // 上涨回转点
-                        Log.e(TAG, "autoTrade: sell " + mSymbol + "---" + System.currentTimeMillis());
+                        Log.i(TAG, "autoTrade: sell " + mSymbol + "---" + System.currentTimeMillis());
                         sellCoins(mSymbol, WAREHOUSE.HALF, Analyzer.getPriceFromDepth(value.getDepth()), 2);
                     } else if (tendencyByKline[3] > 0) {
                         Log.i(TAG, "autoTrade: " + mSymbol + " match many sell rules");
@@ -132,7 +132,7 @@ public class TradeManager {
                             amount = (float) (coinAmount / price);
                             break;
                     }
-                    Log.i(TAG, "purchase: " + coin_type + "  amount:" + amount + "  price:" + price);
+                    Log.e(TAG, "purchase: " + coin_type + "  amount:" + amount + "  price:" + price);
                     return HttpUtil.createRequest()
                             .makeTrade(amount,
                                     price,
@@ -190,7 +190,7 @@ public class TradeManager {
                             break;
                     }
                     amount = 100;
-                    Log.i(TAG, "sell: " + coin_type + "  amount:" + amount + "  price:" + price);
+                    Log.e(TAG, "sell: " + coin_type + "  amount:" + amount + "  price:" + price);
                     return HttpUtil.createRequest()
                             .makeTrade(amount, price,
                                     symbol,
