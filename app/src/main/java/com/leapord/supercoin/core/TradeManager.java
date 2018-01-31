@@ -86,7 +86,7 @@ public class TradeManager {
                 if (tendencyByDepth < 0) {
                     sellCoins(mSymbol, WAREHOUSE.FULL);
                 } else {
-                    purchase(mSymbol, WAREHOUSE.HALF);
+                    sellCoins(mSymbol, WAREHOUSE.HALF);
                 }
             } else {
                 if (tendencyByDepth < 0) {
