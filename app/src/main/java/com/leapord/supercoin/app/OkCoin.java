@@ -57,7 +57,7 @@ public interface OkCoin {
 
         String FIVE_MIN = "5min";
 
-        String FIFTEEN_MIN = "5min";
+        String FIFTEEN_MIN = "15min";
 
         String THITY_MIN = "30min";
 
@@ -93,7 +93,12 @@ public interface OkCoin {
         String CANCEL = "cancel";
     }
 
-    interface API{
+    interface TradeType {
+        int T_THORT = 1;
+        int P_PERIOD = 2;
+    }
+
+    interface API {
         String API_KEY = "2c31b63a-9d64-4889-935c-25f319102832";
 
         String SECRET_KEY = "241CFFFF941F14A3320DC5F9AC349955";

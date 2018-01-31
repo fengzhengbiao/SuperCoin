@@ -196,7 +196,6 @@ public class Analyzer {
      * @return
      */
     public static long getAutoPredicateTime(List<double[]> kNums, int tendency) {
-
         double[] tendencyByKline = getTendencyByKline(kNums, 7);
         if (tendency > 0) {
             if (tendencyByKline[1] < tendencyByKline[2]) {
@@ -236,9 +235,7 @@ public class Analyzer {
         return getPoleX(fit);
     }
 
-    public static boolean isNearZero(double k) {
-        return Math.abs(k) < 8E-7;
-    }
+
 
     /**
      * 是否连续几个点上涨

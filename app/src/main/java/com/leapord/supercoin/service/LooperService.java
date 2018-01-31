@@ -39,6 +39,7 @@ public class LooperService extends Service {
     private String PERIOD = OkCoin.TimePeriod.THREE_MIN;
     private List<String> SYMBOLS = new ArrayList<>();
     private Disposable mDisposiable;
+    private int mTradeType = OkCoin.TradeType.T_THORT;
 
     public LooperService() {
     }
@@ -54,39 +55,66 @@ public class LooperService extends Service {
         super.onCreate();
         Log.i("LooperService", "onCreate: 服务启动");
         ToastUtis.showToast("服务已开启");
-        Observable.interval(0, 20, TimeUnit.SECONDS)
-                .subscribeOn(Schedulers.io())
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .subscribe(new CoinObserver<Long>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        super.onSubscribe(d);
-                        mDisposiable = d;
-                    }
+        startLoop();
+    }
 
-                    @Override
-                    public void onNext(Long value) {
-                        for (String symbol : SYMBOLS) {
-                            Logger.d("更新数据：" + symbol);
-                            Observable.zip(HttpUtil.createRequest().fetchKline(symbol, PERIOD).subscribeOn(Schedulers.io()),
-                                    HttpUtil.createRequest().fetchDepth(symbol).subscribeOn(Schedulers.io()),
-                                    (lists, depth) -> new LiveData(lists, depth))
-                                    .subscribeOn(Schedulers.io())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(KlineObserver.getObserver(symbol));
+    private void startLoop() {
+        if (mDisposiable == null || mDisposiable.isDisposed()) {
+            int period = mTradeType == OkCoin.TradeType.T_THORT ? 30 : 3 * 60;
+            Observable.interval(10, period, TimeUnit.SECONDS)
+                    .subscribeOn(Schedulers.io())
+                    .subscribeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new CoinObserver<Long>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
+                            super.onSubscribe(d);
+                            mDisposiable = d;
                         }
-                    }
-                });
+
+                        @Override
+                        public void onNext(Long value) {
+                            for (String symbol : SYMBOLS) {
+                                Logger.d("更新数据：" + symbol);
+                                Observable.zip(HttpUtil.createRequest().fetchKline(symbol, PERIOD).subscribeOn(Schedulers.io()),
+                                        HttpUtil.createRequest().fetchDepth(symbol).subscribeOn(Schedulers.io()),
+                                        (lists, depth) -> new LiveData(lists, depth))
+                                        .subscribeOn(Schedulers.io())
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribe(KlineObserver.getObserver(symbol, mTradeType));
+                            }
+                        }
+                    });
+        }
     }
 
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        processIntent(intent);
+        if (mDisposiable != null && !mDisposiable.isDisposed()) {
+            mDisposiable.dispose();
+            mDisposiable = null;
+            startLoop();
+        }
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            //API >18 ，此方法能有效隐藏Notification上的图标
+            Intent innerIntent = new Intent(this, GrayInnerService.class);
+            startService(innerIntent);
+        }
+        startForeground(GRAY_SERVICE_ID, new Notification());
+        return START_STICKY;
+    }
+
+    private void processIntent(Intent intent) {
         if (intent != null) {
             String period = intent.getStringExtra("PERIOD");
+            mTradeType = intent.getIntExtra("TRADE_TYPE", OkCoin.TradeType.T_THORT);
             ArrayList<String> symbols = intent.getStringArrayListExtra("SYMBOLS");
             if (!TextUtils.isEmpty(period)) {
                 PERIOD = period;
+                if (mTradeType == OkCoin.TradeType.T_THORT) {
+                    PERIOD = OkCoin.TimePeriod.FIVE_MIN;
+                }
             }
             if (symbols != null && symbols.size() > 0) {
                 SYMBOLS.clear();
@@ -101,13 +129,6 @@ public class LooperService extends Service {
         } else {
             Logger.d("intent=null");
         }
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            //API >18 ，此方法能有效隐藏Notification上的图标
-            Intent innerIntent = new Intent(this, GrayInnerService.class);
-            startService(innerIntent);
-        }
-        startForeground(GRAY_SERVICE_ID, new Notification());
-        return START_STICKY;
     }
 
     @Override

@@ -14,7 +14,8 @@ import butterknife.ButterKnife;
  * @author JokerFish
  */
 
-public abstract class BaseFragment extends Fragment {
+public abstract class
+BaseFragment extends Fragment {
 
     protected final String TAG = this.getClass().getSimpleName();
     protected View mRootView;

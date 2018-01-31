@@ -8,10 +8,13 @@ import android.os.Build;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 import com.leapord.supercoin.R;
 import com.leapord.supercoin.app.Const;
 import com.leapord.supercoin.app.OkCoin;
+import com.leapord.supercoin.core.TradeManager;
 import com.leapord.supercoin.service.KeepAliveService;
 import com.leapord.supercoin.service.LooperService;
 import com.leapord.supercoin.util.SpUtils;
@@ -31,10 +34,22 @@ import static android.content.Context.JOB_SCHEDULER_SERVICE;
  *  Email fengzhengbiao@vcard100.com
  **********************************************/
 
-public class ActionFragment extends BaseFragment implements CompoundButton.OnCheckedChangeListener {
+public class ActionFragment extends BaseFragment implements CompoundButton.OnCheckedChangeListener, RadioGroup.OnCheckedChangeListener {
 
     @BindView(R.id.checkbox)
     CheckBox checkBox;
+    @BindView(R.id.radiogroup)
+    RadioGroup radioGroup;
+    @BindView(R.id.rb_T)
+    RadioButton rbT;
+    @BindView(R.id.rb_period)
+    RadioButton rbPeriod;
+    @BindView(R.id.radiogroup2)
+    RadioGroup radioGroup2;
+    @BindView(R.id.rb_depth)
+    RadioButton rbDepth;
+    @BindView(R.id.rb_kline)
+    RadioButton rbKline;
 
     @Override
     protected int getLayoutResourceId() {
@@ -46,14 +61,15 @@ public class ActionFragment extends BaseFragment implements CompoundButton.OnChe
         super.init(rootView);
         checkBox.setChecked(SpUtils.getBoolean(Const.AUTO_TRANSACTION, false));
         checkBox.setOnCheckedChangeListener(this);
-
+        radioGroup.setOnCheckedChangeListener(this);
+        radioGroup2.setOnCheckedChangeListener(this);
     }
 
 
     public void startLooper() {
         Intent intent = new Intent(getContext(), LooperService.class);
         ArrayList<String> symbols = new ArrayList<>();
-        symbols.add(OkCoin.USDT.BTC);
+        symbols.add(OkCoin.USDT.OF);
         intent.putStringArrayListExtra("SYMBOLS", symbols);
         getActivity().startService(intent);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -85,12 +101,12 @@ public class ActionFragment extends BaseFragment implements CompoundButton.OnChe
     }
 
     private void stopLooper() {
-        Intent intent = new Intent(getContext(), LooperService.class);
-        getActivity().stopService(intent);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             JobScheduler jobScheduler = (JobScheduler) getActivity().getSystemService(JOB_SCHEDULER_SERVICE);
             jobScheduler.cancel(1);
         }
+        Intent intent = new Intent(getContext(), LooperService.class);
+        getActivity().stopService(intent);
         checkBox.setChecked(false);
     }
 
@@ -98,5 +114,34 @@ public class ActionFragment extends BaseFragment implements CompoundButton.OnChe
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         SpUtils.putBoolean(Const.AUTO_TRANSACTION, isChecked);
         ToastUtis.showToast("自动交易已：" + (isChecked ? "打开" : "关闭"));
+    }
+
+    @Override
+    public void onCheckedChanged(RadioGroup group, int checkedId) {
+        switch (group.getId()) {
+            case R.id.radiogroup:
+                Intent intent = new Intent(getContext(), LooperService.class);
+                switch (checkedId) {
+                    case R.id.rb_period:
+                        intent.putExtra("TRADE_TYPE", OkCoin.TradeType.P_PERIOD);
+                        break;
+                    case R.id.rb_T:
+                        intent.putExtra("TRADE_TYPE", OkCoin.TradeType.T_THORT);
+                        break;
+                }
+                getActivity().startService(intent);
+                break;
+            case R.id.radiogroup2:
+                switch (checkedId) {
+                    case R.id.rb_depth:
+                        TradeManager.settMode(2);
+                        break;
+                    case R.id.rb_kline:
+                        TradeManager.settMode(1);
+                        break;
+                }
+                break;
+
+        }
     }
 }
