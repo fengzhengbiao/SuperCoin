@@ -11,6 +11,7 @@ import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.entity.http.Order;
 import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.TradeObserver;
+import com.leapord.supercoin.util.SpUtils;
 import com.leapord.supercoin.util.ToastUtis;
 
 import java.util.List;
@@ -184,7 +185,8 @@ public class TradeManager {
                     } else {
                         Log.i(TAG, "have many coins");
                     }
-                    return remainCoin > 0.01;
+                    long diffTime = System.currentTimeMillis() - SpUtils.getLong(symbol + 1, 0l);
+                    return remainCoin > 0.01 && diffTime > 8 * 60 * 1000;
                 })    // 当前交易区数量不为0
                 .flatMap(userInfo -> {
                     float amount = 0;
@@ -206,8 +208,8 @@ public class TradeManager {
                             amount = (float) (coinAmount / price);
                             break;
                     }
-                    if (coinAmount<1){
-                        amount = (float) (coinAmount/price);
+                    if (coinAmount < 1) {
+                        amount = (float) (coinAmount / price);
                     }
                     Log.e(TAG, "purchase: " + coin_type + "  amount:" + amount + "  price:" + price);
                     return HttpUtil.createRequest()
@@ -241,7 +243,8 @@ public class TradeManager {
                     } else {
                         Log.i(TAG, "have many coins");
                     }
-                    return remainCoin > 0.001;
+                    long diffTime = System.currentTimeMillis() - SpUtils.getLong(symbol + OkCoin.Trade.BUY, 0l);
+                    return remainCoin > 0.01 && diffTime > 8 * 60 * 1000;
                 })    // 当前交易区数量不为0
                 .flatMap(userInfo -> {
                     String coin_type = getCoinZone(symbol);

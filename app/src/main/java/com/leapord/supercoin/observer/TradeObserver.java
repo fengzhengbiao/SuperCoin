@@ -5,6 +5,7 @@ import com.leapord.supercoin.entity.dao.Trade;
 import com.leapord.supercoin.entity.dao.TradeDao;
 import com.leapord.supercoin.entity.event.TradeChangeEvent;
 import com.leapord.supercoin.entity.http.TradeResponse;
+import com.leapord.supercoin.util.SpUtils;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -34,5 +35,8 @@ public class TradeObserver extends CoinObserver<TradeResponse> {
         trade.setStatus(value.isResult());
         tradeDao.save(trade);
         EventBus.getDefault().post(new TradeChangeEvent(tradeType, symbol));
+        if (value.isResult()){
+            SpUtils.putLong(symbol+tradeType,System.currentTimeMillis());
+        }
     }
 }
