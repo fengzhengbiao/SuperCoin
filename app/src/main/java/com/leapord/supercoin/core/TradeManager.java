@@ -184,7 +184,7 @@ public class TradeManager {
                     } else {
                         Log.i(TAG, "have many coins");
                     }
-                    return remainCoin > 0.001;
+                    return remainCoin > 0.01;
                 })    // 当前交易区数量不为0
                 .flatMap(userInfo -> {
                     float amount = 0;
@@ -205,6 +205,9 @@ public class TradeManager {
                         case FULL:
                             amount = (float) (coinAmount / price);
                             break;
+                    }
+                    if (coinAmount<1){
+                        amount = (float) (coinAmount/price);
                     }
                     Log.e(TAG, "purchase: " + coin_type + "  amount:" + amount + "  price:" + price);
                     return HttpUtil.createRequest()

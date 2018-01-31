@@ -69,7 +69,9 @@ public class ActionFragment extends BaseFragment implements CompoundButton.OnChe
     public void startLooper() {
         Intent intent = new Intent(getContext(), LooperService.class);
         ArrayList<String> symbols = new ArrayList<>();
-        symbols.add(OkCoin.USDT.OF);
+//        symbols.add(OkCoin.USDT.OF);
+        symbols.add(OkCoin.USDT.SWFTC);
+//        symbols.add(OkCoin.USDT.LIGHT);
         intent.putStringArrayListExtra("SYMBOLS", symbols);
         getActivity().startService(intent);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
