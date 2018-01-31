@@ -33,10 +33,9 @@ public class TradeManager {
      * @param mSymbol
      * @param tendencyByDepth    买卖盘趋势
      * @param tendencyByKline    【计算趋势，起始趋势，结束趋势，总体趋势】
-     * @param increasePointCount 7点增长线
      * @param value              此刻数据
      */
-    public static void autoTrade(String mSymbol, int tendencyByDepth, double[] tendencyByKline, int increasePointCount, LiveData value) {
+    public static void autoTrade(String mSymbol, int tendencyByDepth, double[] tendencyByKline, LiveData value) {
         //        买入
         if (tendencyByDepth == 1 || tendencyByDepth == 2) {     //卖家高价卖出较多  买家低价较少
             switch ((int) tendencyByKline[0]) {

@@ -45,14 +45,12 @@ public class KlineObserver extends CoinObserver<LiveData> {
     public void onNext(LiveData value) {
         Logger.d("处理K线数据");
         int tendencyByDepth = Analyzer.getDepthTendency(value.getDepth());
-        int increasePointCount = Analyzer.getIncreasePointCountByKline(value.getKLineData(), 5);
         double[] tendencyByKline = Analyzer.getTendencyByKline(value.getKLineData(), 7);
         if (SpUtils.getBoolean(Const.AUTO_TRANSACTION, false)) {
-            TradeManager.autoTrade(mSymbol, tendencyByDepth, tendencyByKline, increasePointCount, value);
+            TradeManager.autoTrade(mSymbol, tendencyByDepth, tendencyByKline, value);
         } else {
             Log.i(TAG, "onNext: auto trade closed");
         }
-//        long time = Analyzer.getPredicateTimeByNearPoint(value.getKLineData(), 5);
         long time = Analyzer.getAutoPredicateTime(value.getKLineData(), (int) tendencyByKline[3]);
         double[] priceFromDepth = Analyzer.getPriceFromDepth(value.getDepth());
         KlineAnalyzeInfo klineAnalyzeInfo = new KlineAnalyzeInfo();
