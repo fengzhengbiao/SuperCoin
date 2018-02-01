@@ -1,5 +1,6 @@
 package com.leapord.supercoin.core;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -29,6 +30,8 @@ import io.reactivex.schedulers.Schedulers;
 
 public class TradeManager {
     private static final String TAG = "TradeManager";
+    private static final int STANDARD_DIFF_TIME = 10 * 60 * 1000;
+    private static final double MIN_COIN_AMOUNT = 0.01;
 
     public static int TRADE_MODE = 1;       //1:优先深度  2：优先K线
 
@@ -179,37 +182,36 @@ public class TradeManager {
                 .filter(userInfo -> {
                     String coin_type = getCoinZone(symbol);
                     double remainCoin = Double.parseDouble(userInfo.getInfo().getFunds().getFree().get(coin_type));
-                    if (remainCoin < 0.001) {
+                    if (remainCoin < MIN_COIN_AMOUNT) {
                         ToastUtis.showToast("coin not enough：" + coin_type);
                         Log.i(TAG, "coin not enough：" + coin_type);
                     } else {
                         Log.i(TAG, "have many coins");
                     }
-                    long diffTime = System.currentTimeMillis() - SpUtils.getLong(symbol + 1, 0l);
-                    return remainCoin > 0.01 && diffTime > 8 * 60 * 1000;
+                    long diffTime = System.currentTimeMillis() - SpUtils.getLong(symbol + OkCoin.Trade.BUY, 0l);
+                    return remainCoin > 0.01 && diffTime > STANDARD_DIFF_TIME;
                 })    // 当前交易区数量不为0
                 .flatMap(userInfo -> {
-                    float amount = 0;
-                    float price = 0;
+                    double amount = 0;
                     String coin_type = getCoinZone(symbol);
                     double coinAmount = Double.parseDouble(userInfo.getInfo().getFunds().getFree().get(coin_type));
-                    price = priority == 1 ? (float) ((prices[0] + prices[1]) / 2) : (float) (prices[0]);
+                    double price = calculatePrice(priority, 1, prices);
                     switch (warehouse) {
                         case ONE_FOUR:
-                            amount = (float) (coinAmount / (4 * price));
+                            amount = coinAmount / (4 * price);
                             break;
                         case HALF:
-                            amount = (float) (coinAmount / (2 * price));
+                            amount = coinAmount / (2 * price);
                             break;
                         case THREE_FOUR:
-                            amount = (float) (coinAmount * 3 / (4 * price));
+                            amount = coinAmount * 3 / (4 * price);
                             break;
                         case FULL:
-                            amount = (float) (coinAmount / price);
+                            amount = coinAmount / price;
                             break;
                     }
                     if (coinAmount < 1) {
-                        amount = (float) (coinAmount / price);
+                        amount = coinAmount / price;
                     }
                     Log.e(TAG, "purchase: " + coin_type + "  amount:" + amount + "  price:" + price);
                     return HttpUtil.createRequest()
@@ -237,30 +239,30 @@ public class TradeManager {
                 .filter(userInfo -> {
                     String coin_type = getCoinZone(symbol);
                     double remainCoin = Double.parseDouble(userInfo.getInfo().getFunds().getFree().get(coin_type));
-                    if (remainCoin < 0.001) {
+                    if (remainCoin < MIN_COIN_AMOUNT) {
                         ToastUtis.showToast("coin not enough：" + coin_type);
                         Log.i(TAG, "coin not enough：" + coin_type);
                     } else {
                         Log.i(TAG, "have many coins");
                     }
-                    long diffTime = System.currentTimeMillis() - SpUtils.getLong(symbol + OkCoin.Trade.BUY, 0l);
-                    return remainCoin > 0.01 && diffTime > 8 * 60 * 1000;
+                    long diffTime = System.currentTimeMillis() - SpUtils.getLong(symbol + OkCoin.Trade.BUY_MARKET, 0l);
+                    return remainCoin > 0.01 && diffTime > STANDARD_DIFF_TIME;
                 })    // 当前交易区数量不为0
                 .flatMap(userInfo -> {
                     String coin_type = getCoinZone(symbol);
                     double coinAmount = Double.parseDouble(userInfo.getInfo().getFunds().getFree().get(coin_type));
-                    float amount = 0;
+                    double amount = 0;
                     switch (warehouse) {
                         case ONE_FOUR:
-                            amount = (float) (coinAmount / 4);
+                            amount = coinAmount / 4;
                             break;
                         case HALF:
-                            amount = (float) (coinAmount / 2);
+                            amount = coinAmount / 2;
                             break;
                         case THREE_FOUR:
-                            amount = (float) (coinAmount * 3 / 4);
+                            amount = coinAmount * 3 / 4;
                         case FULL:
-                            amount = (float) coinAmount;
+                            amount = coinAmount;
                             break;
 
                     }
@@ -276,6 +278,30 @@ public class TradeManager {
                 .subscribe(new TradeObserver(symbol, OkCoin.Trade.BUY));
     }
 
+    /**
+     * @param priority  优先级
+     * @param tradeType 1：买 2：卖
+     * @param prices    买卖盘价格【卖一价，买一价】
+     * @return
+     */
+    public static double calculatePrice(int priority, int tradeType, double[] prices) {
+        double calcPrice = tradeType == 1 ? 0 : 100;
+        if (priority == 1) {
+            int avgPrice = (int) (100000 * (prices[0] + prices[1]) / 2);
+            if (avgPrice % 10 == 0) {
+                calcPrice = avgPrice * 0.00001;
+            } else {
+                if (tradeType == 1) {
+                    calcPrice = Math.floor(avgPrice * 0.1) * 0.0001;
+                } else {
+                    calcPrice = Math.ceil(avgPrice * 0.1) * 0.0001;
+                }
+            }
+        } else {
+            calcPrice = tradeType == 1 ? prices[0] : prices[1];
+        }
+        return calcPrice;
+    }
 
     /**
      * 买入
@@ -291,33 +317,33 @@ public class TradeManager {
                 .filter(userInfo -> {
                     String coin_type = getCoinName(symbol);
                     double remainFreeCoin = Double.parseDouble(userInfo.getInfo().getFunds().getFree().get(coin_type));
-                    if (remainFreeCoin > 0.001) {
-                        if (remainFreeCoin > 0.01) {
+                    if (remainFreeCoin > MIN_COIN_AMOUNT) {
+                        if (remainFreeCoin > MIN_COIN_AMOUNT) {
                             Log.i(TAG, symbol + "Freezed " + symbol + " coins still remain " + remainFreeCoin);
                         }
                     } else {
                         Log.i(TAG, "have no " + symbol + " coins Freezed");
                     }
-                    return remainFreeCoin > 0.001;
+                    long diffTime = System.currentTimeMillis() - SpUtils.getLong(symbol + OkCoin.Trade.SELL, 0l);
+                    return remainFreeCoin > MIN_COIN_AMOUNT && diffTime > STANDARD_DIFF_TIME;
                 })
                 .flatMap(userInfo -> {
-                    float amount = 0;
-                    float price = 0;
+                    double amount = 0;
                     String coin_type = getCoinName(symbol);
                     double coinAmount = Double.parseDouble(userInfo.getInfo().getFunds().getFree().get(coin_type));
-                    price = priority == 1 ? (float) ((prices[0] + prices[1]) / 2) : (float) (prices[1]);
+                    double price = calculatePrice(priority, 2, prices);
                     switch (warehouse) {
                         case ONE_FOUR:
-                            amount = (float) (coinAmount / (4 * price));
+                            amount = coinAmount / (4 * price);
                             break;
                         case HALF:
-                            amount = (float) (coinAmount / (2 * price));
+                            amount = coinAmount / (2 * price);
                             break;
                         case THREE_FOUR:
-                            amount = (float) (coinAmount * 3 / (4 * price));
+                            amount = coinAmount * 3 / (4 * price);
                             break;
                         case FULL:
-                            amount = (float) (coinAmount / price);
+                            amount = coinAmount / price;
                             break;
                     }
                     Log.e(TAG, "sell: " + coin_type + "  amount:" + amount + "  price:" + price);
@@ -340,14 +366,15 @@ public class TradeManager {
                 .filter(userInfo -> {
                     String coin_type = getCoinName(symbol);
                     double remainFreeCoin = Double.parseDouble(userInfo.getInfo().getFunds().getFree().get(coin_type));
-                    if (remainFreeCoin > 0.001) {
-                        if (remainFreeCoin > 0.01) {
+                    if (remainFreeCoin > MIN_COIN_AMOUNT) {
+                        if (remainFreeCoin > MIN_COIN_AMOUNT) {
                             Log.i(TAG, symbol + "Freezed " + symbol + " coins still remain " + remainFreeCoin);
                         }
                     } else {
                         Log.i(TAG, "have no " + symbol + " coins Freezed");
                     }
-                    return remainFreeCoin > 0.001;
+                    long diffTime = System.currentTimeMillis() - SpUtils.getLong(symbol + OkCoin.Trade.SELL, 0l);
+                    return remainFreeCoin > MIN_COIN_AMOUNT && diffTime > STANDARD_DIFF_TIME;
                 })
                 .flatMap(userInfo -> {
 
@@ -442,10 +469,12 @@ public class TradeManager {
     }
 
 
+    @NonNull
     public static String getCoinName(String symbol) {
         return symbol.substring(0, symbol.indexOf('_'));
     }
 
+    @NonNull
     public static String getCoinZone(String symbol) {
         return symbol.substring(symbol.indexOf('_') + 1);
     }

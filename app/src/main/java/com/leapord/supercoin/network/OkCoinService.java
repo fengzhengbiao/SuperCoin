@@ -46,8 +46,8 @@ public interface OkCoinService {
     @FormUrlEncoded
     @POST("/api/v1/trade.do")
         // 用户下单
-    Observable<TradeResponse> makeTrade(@Field("amount") float amount,      //交易数量
-                                        @Field("price") float price,        //限价单价格
+    Observable<TradeResponse> makeTrade(@Field("amount") double amount,      //交易数量
+                                        @Field("price") double price,        //限价单价格
                                         @Field("symbol") String symbol,
                                         @Field("type") String type          ////交易类型Okcoin.Trade
     );
