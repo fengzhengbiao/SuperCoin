@@ -60,7 +60,7 @@ public class KlineObserver extends CoinObserver<LiveData> {
             if (mTradeType == OkCoin.TradeType.T_THORT) {       //短线交易
                 int tendencyByDepth = Analyzer.getDepthTendency(value.getDepth());
                 double[] tendencyByKline = Analyzer.getTendencyByKline(value.getKLineData(), 7);
-                boolean gentle = TradeManager.isGentle(value.getKLineData());
+                boolean gentle = TradeManager.isFastChange(value.getKLineData());
                 if (SpUtils.getBoolean(Const.AUTO_TRANSACTION, false)) {
                     Log.i(TAG, "onNext: auto trade opened");
                     TradeManager.autoTrade(mSymbol, tendencyByDepth, tendencyByKline, value);
