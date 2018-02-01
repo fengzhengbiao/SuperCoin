@@ -71,7 +71,7 @@ public class TradeManager {
      * @param value
      */
     private static void autoTradeTwo(String mSymbol, int tendencyByDepth, double[] tendencyByKline, LiveData value) {
-        if (tendencyByKline[3] > 0) {
+        if (tendencyByKline[3] > 0 && isGentle(value.getKLineData())) {
             if (tendencyByKline[1] < tendencyByKline[2]) {
                 if (tendencyByDepth > 0) {
                     purchase(mSymbol, WAREHOUSE.FULL);
@@ -85,7 +85,7 @@ public class TradeManager {
                     purchase(mSymbol, WAREHOUSE.HALF, Analyzer.getPriceFromDepth(value.getDepth()), 1);
                 }
             }
-        } else if (tendencyByKline[3] < 0) {
+        } else if (tendencyByKline[3] < 0 && isGentle(value.getKLineData())) {
             if (tendencyByKline[1] > tendencyByKline[2]) {
                 if (tendencyByDepth < 0) {
                     sellCoins(mSymbol, WAREHOUSE.FULL);
@@ -102,6 +102,17 @@ public class TradeManager {
         } else {
             Log.i(TAG, "autoTradeTwo: match no rules");
         }
+    }
+
+    public static boolean isGentle(List<double[]> kLineData) {
+        int endIndex = kLineData.size() - 1;
+        double price = 0;
+        for (int i = (endIndex - 11); i < (endIndex - 7); i++) {
+            price += kLineData.get(i)[4];
+        }
+        price = price / 4;
+        double v = Math.abs(price - kLineData.get(endIndex)[4]) / kLineData.get(endIndex)[4];
+        return v > 0.05;
     }
 
     /**

@@ -145,11 +145,11 @@ public class Analyzer {
         for (int i = startIndex; i < kNums.size(); i++) {
             double[] kPoint = kNums.get(i);
             if (i < middleIndex) {
-                startPoints.add(kPoint[0], kPoint[1]);
+                startPoints.add(i, kPoint[1]);
             } else {
-                endPoints.add(kPoint[0], kPoint[1]);
+                endPoints.add(i-middleIndex, kPoint[1]);
             }
-            fullPoints.add(kPoint[0], kPoint[1]);
+            fullPoints.add(i, kPoint[1]);
         }
         // degree 指定多项式阶数
         PolynomialCurveFitter fitter = PolynomialCurveFitter.create(1);
