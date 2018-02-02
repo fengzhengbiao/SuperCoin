@@ -62,10 +62,10 @@ public class KlineObserver extends CoinObserver<LiveData> {
                 double[] tendencyByKline = Analyzer.getTendencyByKline(value.getKLineData(), 7);
                 boolean gentle = TradeManager.isFastChange(value.getKLineData());
                 if (SpUtils.getBoolean(Const.AUTO_TRANSACTION, false)) {
-                    Log.i(TAG, "onNext: auto trade opened");
+                    Log.i(TAG, "onNext: auto trade opened,type is T");
                     TradeManager.autoTrade(mSymbol, tendencyByDepth, tendencyByKline, value);
                 } else {
-                    Log.i(TAG, "onNext: auto trade closed");
+                    Log.i(TAG, "onNext: auto trade closed,type is T");
                 }
                 long timeByNearPoint = Analyzer.getPredicateTimeByNearPoint(value.getKLineData(), 5);
                 klineAnalyzeInfo.setCoinName(mSymbol);
@@ -81,10 +81,10 @@ public class KlineObserver extends CoinObserver<LiveData> {
                 klineAnalyzeInfo.setCoinName(mSymbol);
                 klineAnalyzeInfo.setTendency(0);
                 if (SpUtils.getBoolean(Const.AUTO_TRANSACTION, false)) {
-                    Log.i(TAG, "onNext: auto trade opened");
+                    Log.i(TAG, "onNext: auto trade opened,type is Period");
                     TradeManager.autoTrade(mSymbol, dif, dea, macd);
                 } else {
-                    Log.i(TAG, "onNext: auto trade closed");
+                    Log.i(TAG, "onNext: auto trade closed ,type is Period");
                 }
                 double[] tendencyByKline = Analyzer.getTendencyByKline(value.getKLineData(), 7);
                 long time = Analyzer.getAutoPredicateTime(value.getKLineData(), (int) tendencyByKline[3]);
@@ -98,6 +98,5 @@ public class KlineObserver extends CoinObserver<LiveData> {
                 .subscribe(info -> EventBus.getDefault().post(info),
                         throwable -> Log.i(TAG, "calc analyzer error: " + throwable.toString())
                 );
-
     }
 }

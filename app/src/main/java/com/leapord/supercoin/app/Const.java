@@ -13,4 +13,13 @@ public interface Const {
 
     String TRADE_SYMBOL = "trade_symbol";
 
+
+    String SELECTED_SYMBOL = "user_selected_symbol";
+
+    String SELECTED_STRATEGY = "user_selected_strategy";
+
+    String SELECTED_PERIOD= "user_selected_period";
+
+   String  SELECTED_PREVIOUS = "user_selected_previous";
+
 }

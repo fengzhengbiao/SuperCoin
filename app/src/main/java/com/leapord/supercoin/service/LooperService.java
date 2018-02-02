@@ -9,11 +9,13 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.leapord.supercoin.app.Const;
 import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.entity.http.LiveData;
 import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.CoinObserver;
 import com.leapord.supercoin.observer.KlineObserver;
+import com.leapord.supercoin.util.SpUtils;
 import com.leapord.supercoin.util.ToastUtis;
 import com.orhanobut.logger.Logger;
 
@@ -55,12 +57,32 @@ public class LooperService extends Service {
         super.onCreate();
         Log.i("LooperService", "onCreate: 服务启动");
         ToastUtis.showToast("服务已开启");
-        startLoop();
     }
 
     private void startLoop() {
         if (mDisposiable == null || mDisposiable.isDisposed()) {
-            int period = mTradeType == OkCoin.TradeType.T_THORT ? 30 : 3 * 60;
+            int period = 30;
+            if (mTradeType == OkCoin.TradeType.P_PERIOD) {
+                switch (PERIOD) {
+                    case OkCoin.TimePeriod.THREE_MIN:
+                        period = 1 * 60;
+                        break;
+                    case OkCoin.TimePeriod.FIVE_MIN:
+                        period = 3 * 60;
+                        break;
+                    case OkCoin.TimePeriod.FIFTEEN_MIN:
+                        period = 8 * 60;
+                        break;
+                    case OkCoin.TimePeriod.THITY_MIN:
+                        period = 15 * 60;
+                        break;
+                    case OkCoin.TimePeriod.ONE_HOUR:
+                        period = 30 * 60;
+                        break;
+                }
+            }
+            Logger.d("Refresh： delay：" + 10 + "  period : " + period + " seconds  tradeType : " +
+                    (SpUtils.getInt(Const.SELECTED_STRATEGY, 1) == 1 ? "T" : "Period") + "  symbol : " + SYMBOLS.get(0));
             Observable.interval(10, period, TimeUnit.SECONDS)
                     .subscribeOn(Schedulers.io())
                     .subscribeOn(AndroidSchedulers.mainThread())
@@ -74,7 +96,6 @@ public class LooperService extends Service {
                         @Override
                         public void onNext(Long value) {
                             for (String symbol : SYMBOLS) {
-                                Logger.d("更新数据：" + symbol);
                                 Observable.zip(HttpUtil.createRequest().fetchKline(symbol, PERIOD).subscribeOn(Schedulers.io()),
                                         HttpUtil.createRequest().fetchDepth(symbol).subscribeOn(Schedulers.io()),
                                         (lists, depth) -> new LiveData(lists, depth))
@@ -95,6 +116,8 @@ public class LooperService extends Service {
             mDisposiable.dispose();
             mDisposiable = null;
             startLoop();
+        } else {
+            startLoop();
         }
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
             //API >18 ，此方法能有效隐藏Notification上的图标
@@ -110,11 +133,13 @@ public class LooperService extends Service {
             String period = intent.getStringExtra("PERIOD");
             mTradeType = intent.getIntExtra("TRADE_TYPE", OkCoin.TradeType.T_THORT);
             ArrayList<String> symbols = intent.getStringArrayListExtra("SYMBOLS");
+            if (mTradeType == OkCoin.TradeType.P_PERIOD) {
+                PERIOD = OkCoin.TimePeriod.THITY_MIN;
+            } else {
+                PERIOD = OkCoin.TimePeriod.THREE_MIN;
+            }
             if (!TextUtils.isEmpty(period)) {
                 PERIOD = period;
-                if (mTradeType == OkCoin.TradeType.T_THORT) {
-                    PERIOD = OkCoin.TimePeriod.FIVE_MIN;
-                }
             }
             if (symbols != null && symbols.size() > 0) {
                 SYMBOLS.clear();

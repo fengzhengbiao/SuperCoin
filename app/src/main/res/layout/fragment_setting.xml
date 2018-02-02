@@ -10,14 +10,57 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin">
 
-    <CheckBox
-        android:id="@+id/checkbox"
+    <TextView
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:text="自动交易" />
+        android:layout_height="wrap_content"
+        android:text="币种"
+        android:textColor="@color/colorPrimary"
+        android:textSize="15sp" />
 
     <RadioGroup
-        android:id="@+id/radiogroup"
+        android:id="@+id/radiogroup_coin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/rb_of"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="OF "
+            android:textSize="13sp" />
+
+        <RadioButton
+            android:id="@+id/rb_light"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="15dp"
+            android:layout_weight="1"
+            android:text="LIGHT"
+            android:textSize="13sp" />
+
+        <RadioButton
+            android:id="@+id/rb_swftc"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="15dp"
+            android:layout_weight="1"
+            android:text="SWFTC"
+            android:textSize="13sp" />
+    </RadioGroup>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="策略"
+        android:textColor="@color/colorPrimary"
+        android:textSize="15sp" />
+
+    <RadioGroup
+        android:id="@+id/radiogroup_strategy"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -39,54 +82,119 @@
             android:textSize="13sp" />
     </RadioGroup>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="优先级(T线)"
+        android:textColor="@color/colorPrimary"
+        android:textSize="15sp" />
+
     <RadioGroup
-        android:id="@+id/radiogroup2"
-        android:layout_width="match_parent"
+        android:id="@+id/radiogroup_previous"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <RadioButton
             android:id="@+id/rb_depth"
             android:layout_width="wrap_content"
-            android:layout_height="50dp"
+            android:layout_height="40dp"
             android:checked="true"
             android:text="优先买卖盘（低风险）"
-            android:textSize="13sp" />
+            android:textSize="12sp" />
 
         <RadioButton
             android:id="@+id/rb_kline"
             android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_marginLeft="15dp"
+            android:layout_height="40dp"
             android:text="优先K线（高风险）"
-            android:textSize="13sp" />
+            android:textSize="12sp" />
     </RadioGroup>
 
-    <Button
-        android:id="@+id/btn_start"
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="开启" />
+        android:layout_marginTop="20dp"
+        android:text="波段设置"
+        android:textColor="@color/colorPrimary" />
 
-    <Button
-        android:id="@+id/btn_stop"
-        android:layout_width="wrap_content"
+    <RadioGroup
+        android:id="@+id/radiogroup_period"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:text="关闭" />
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/btn_add"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:text="增加" />
+        <RadioButton
+            android:id="@+id/rb_3"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="3Min"
+            android:textSize="12sp" />
 
-    <Button
-        android:id="@+id/btn_remove"
-        android:layout_width="wrap_content"
+        <RadioButton
+            android:id="@+id/rb_5"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:text="5Min"
+            android:textSize="12sp" />
+
+        <RadioButton
+            android:id="@+id/rb_15"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:text="15Min"
+            android:textSize="12sp" />
+
+        <RadioButton
+            android:id="@+id/rb_30"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:text="30min"
+            android:textSize="12sp" />
+
+        <RadioButton
+            android:id="@+id/rb_60"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:text="60min"
+            android:textSize="12sp" />
+    </RadioGroup>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:text="减少" />
+        android:layout_marginTop="20dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="自动交易" />
+
+        <Button
+            android:id="@+id/btn_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:text="开启" />
+
+        <Button
+            android:id="@+id/btn_stop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+
+            android:text="关闭" />
+    </LinearLayout>
+
 
 </LinearLayout>

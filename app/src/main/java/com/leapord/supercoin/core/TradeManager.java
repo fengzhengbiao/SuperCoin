@@ -498,71 +498,58 @@ public class TradeManager {
 
     public static void autoTrade(String symbol, List<Double> dif, List<Double> dea, List<Double> macd) {
         int endIndex = macd.size() - 1;
-        if (macd.get(macd.size() - 1) == 0) {
-            Double aDouble = macd.get(endIndex - 1);
-            if (aDouble > 0) {
-                for (int i = endIndex - 1; i > endIndex - 4; i++) {
-                    if (macd.get(i) < 0) {
-                        continue;
-                    }
-                    if (dif.get(i) > 0 && dea.get(i) > 0) {
-                        purchase(symbol, WAREHOUSE.FULL);
-                        Log.i(TAG, "autoTrade: purchase full warehouse");
-                    } else {
-                        purchase(symbol, WAREHOUSE.HALF);
-                        Log.i(TAG, "autoTrade: purchase half warehouse");
-                    }
+        Double endMacd = macd.get(endIndex);
+        int tendency = 0;
+        for (int i = endIndex - 3; i < endIndex; i++) {
+            tendency += (macd.get(i) > 0 ? 1 : -1);
+        }
+        if (isNearZero(endMacd)) {
+            if (tendency == -3) {
+                Log.i(TAG, "MACD: cross , previous is negative ");
+                if (dif.get(endIndex - 3) > 0 && dea.get(endIndex - 3) > 0) {
+                    Log.i(TAG, "MACD: cross , buy full");
+                    purchase(symbol, WAREHOUSE.FULL);
+                } else {
+                    purchase(symbol, WAREHOUSE.HALF);
+                    Log.i(TAG, "MACD: cross , buy half");
                 }
+            } else if (tendency == 3) {
+                Log.i(TAG, "MACD: cross , previous is positive ,sell all ");
+                sellCoins(symbol, WAREHOUSE.FULL);
             } else {
-                for (int i = endIndex - 1; i > endIndex - 4; i++) {
-                    if (macd.get(i) > 0) {
-                        continue;
-                    }
-                    if (dif.get(i) < 0 && dea.get(i) < 0) {
-                        sellCoins(symbol, WAREHOUSE.FULL);
-                        Log.i(TAG, "autoTrade: sell full warehouse");
-                    } else {
-                        sellCoins(symbol, WAREHOUSE.HALF);
-                        Log.i(TAG, "autoTrade: sell half warehouse");
-                    }
-                }
+                Log.i(TAG, "MACD: no cross , previous is " + (tendency > 0 ? "positive " : "negative"));
             }
-        } else if (isNearZero(macd.get(endIndex))) {
-            Double aDouble = macd.get(endIndex - 1);
-            if (aDouble > 0) {
-                for (int i = endIndex - 1; i > endIndex - 4; i++) {
-                    if (macd.get(i) < 0) {
-                        continue;
-                    }
-                    if (dif.get(i) > 0 && dea.get(i) > 0) {
-                        purchase(symbol, WAREHOUSE.FULL);
-                        Log.i(TAG, "autoTrade: purchase full warehouse");
-                    } else {
-                        purchase(symbol, WAREHOUSE.HALF);
-                        Log.i(TAG, "autoTrade: purchase half warehouse");
-                    }
-                }
+
+        } else if (endMacd > 0) {
+            if (tendency < 1) {
+                Log.i(TAG, "MACD: cross , buy full ");
+                purchase(symbol, WAREHOUSE.FULL);
+            } else if (tendency < 2) {
+                Log.i(TAG, "MACD: cross , buy half ");
+                purchase(symbol, WAREHOUSE.HALF);
             } else {
-                for (int i = endIndex - 1; i > endIndex - 5; i++) {
-                    if (macd.get(i) > 0) {
-                        continue;
-                    }
-                    if (dif.get(i) < 0 && dea.get(i) < 0) {
-                        sellCoins(symbol, WAREHOUSE.FULL);
-                        Log.i(TAG, "autoTrade: sell full warehouse");
-                    } else {
-                        sellCoins(symbol, WAREHOUSE.HALF);
-                        Log.i(TAG, "autoTrade: sell half warehouse");
-                    }
-                }
+                Log.i(TAG, "MACD: no cross nearby, near is " + (tendency > 0 ? "positive " : "negative"));
             }
-        } else {
-            Log.i(TAG, "autoTrade: match no rules");
+        } else if (endMacd < 0) {
+            if (tendency < -1) {
+                if (dif.get(endIndex - 3) > 0 && dea.get(endIndex - 3) > 0) {
+                    Log.i(TAG, "MACD: cross , sell full");
+                    sellCoins(symbol, WAREHOUSE.FULL);
+                } else {
+                    Log.i(TAG, "MACD: cross , sell half");
+                    sellCoins(symbol, WAREHOUSE.HALF);
+                }
+            } else if (tendency < 2) {
+                Log.i(TAG, "MACD: cross , sell half ");
+                sellCoins(symbol, WAREHOUSE.HALF);
+            } else {
+                Log.i(TAG, "MACD: no cross nearby, near is " + (tendency > 0 ? "positive " : "negative"));
+            }
         }
     }
 
     public static boolean isNearZero(double k) {
-        return Math.abs(k) < 8E-2;
+        return Math.abs(k) < 8E-10;
     }
 
     public enum WAREHOUSE {

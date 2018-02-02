@@ -19,48 +19,44 @@ public class MACDProcessor {
     private static List<Double> MACDs;
 
 
-    public  static void process(List<double[]> kNums) {
+    public static void process(List<double[]> kNums) {
         DEAs = new ArrayList<>();
         DIFs = new ArrayList<>();
         MACDs = new ArrayList<>();
 
-        List<Double> dEAs = new ArrayList<>();
-        List<Double> dIFs = new ArrayList<>();
-        List<Double> mACDs = new ArrayList<>();
 
-        double eMA12 = 0.0;
-        double eMA26 = 0.0;
-        double close = 0;
-        double dIF = 0.0;
-        double dEA = 0.0;
-        double mACD = 0.0;
-        if (kNums != null && kNums.size() > 0) {
+        double ema12 = 0;
+        double ema26 = 0;
+        double diff = 0;
+        double dea = 0;
+        double macd = 0;
 
-            for (int i = kNums.size() - 1; i >= 0; i--) {
-                close = kNums.get(i)[4];
-                if (i == kNums.size() - 1) {
-                    eMA12 = close;
-                    eMA26 = close;
-                } else {
-                    eMA12 = eMA12 * 11 / 13 + close * 2 / 13;   //EMA（12）=前一日EMA（12）×11/13＋今日收盘价×2/13
-                    eMA26 = eMA26 * 25 / 27 + close * 2 / 27;   //EMA（12）=前一日EMA（26）×25/27＋今日收盘价×2/27
-                    dIF = eMA12 - eMA26;        //short日平均收盘价-long日平均收盘价
-                    dEA = dEA * 8 / 10 + dIF * 2 / 10;  //m日平均diff
-                    mACD = dIF - dEA;
-                }
-                dEAs.add(dEA);
-                dIFs.add(dIF);
-                mACDs.add(mACD);
+        for (int i = 0; i < kNums.size(); i++) {
+            double close = kNums.get(i)[4];
+
+            if (i == 0) {
+                ema12 = close;
+                ema26 = close;
+            } else {
+                // EMA（12） = 前一日EMA（12） X 11/13 + 今日收盘价 X 2/13
+                // EMA（26） = 前一日EMA（26） X 25/27 + 今日收盘价 X 2/27
+                ema12 = ema12 * 11f / 13f + close * 2f / 13f;
+                ema26 = ema26 * 25f / 27f + close * 2f / 27f;
             }
 
-            for (int i = dEAs.size() - 1; i >= 0; i--) {
-                DEAs.add(dEAs.get(i));
-                DIFs.add(dIFs.get(i));
-                MACDs.add(mACDs.get(i));
-            }
+            // DIF = EMA（12） - EMA（26） 。
+            // 今日DEA = （前一日DEA X 8/10 + 今日DIF X 2/10）
+            // 用（DIF-DEA）*2 即为 MACD 柱状图。
+            diff = ema12 - ema26;
+            dea = dea * 8f / 10f + diff * 2f / 10f;
+            macd = (diff - dea) * 2f;
+
+            DIFs.add(diff);
+            DEAs.add(dea);
+            MACDs.add(macd);
         }
-
     }
+
 
     public static List<Double> getDEA() {
         return DEAs;
