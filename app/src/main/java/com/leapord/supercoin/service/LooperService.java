@@ -81,42 +81,46 @@ public class LooperService extends Service {
                         break;
                 }
             }
-            Logger.d("Refresh： delay：" + 10 + "  period : " + period + " seconds  tradeType : " +
-                    (SpUtils.getInt(Const.SELECTED_STRATEGY, 1) == 1 ? "T" : "Period") + "  symbol : " + SYMBOLS.get(0));
-            Observable.interval(10, period, TimeUnit.SECONDS)
-                    .subscribeOn(Schedulers.io())
-                    .subscribeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new CoinObserver<Long>() {
-                        @Override
-                        public void onSubscribe(Disposable d) {
-                            super.onSubscribe(d);
-                            mDisposiable = d;
-                        }
-
-                        @Override
-                        public void onNext(Long value) {
-                            for (String symbol : SYMBOLS) {
-                                Observable.zip(HttpUtil.createRequest().fetchKline(symbol, PERIOD).subscribeOn(Schedulers.io()),
-                                        HttpUtil.createRequest().fetchDepth(symbol).subscribeOn(Schedulers.io()),
-                                        (lists, depth) -> new LiveData(lists, depth))
-                                        .subscribeOn(Schedulers.io())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe(KlineObserver.getObserver(symbol, mTradeType));
+            if (SYMBOLS.size() != 0) {
+                Logger.d("Refresh： delay：" + 10 + "  period : " + period + " seconds  tradeType : " +
+                        (SpUtils.getInt(Const.SELECTED_STRATEGY, 1) == 1 ? "T" : "Period") + "  symbol : " + SYMBOLS.get(0));
+                Observable.interval(10, period, TimeUnit.SECONDS)
+                        .subscribeOn(Schedulers.io())
+                        .subscribeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new CoinObserver<Long>() {
+                            @Override
+                            public void onSubscribe(Disposable d) {
+                                super.onSubscribe(d);
+                                mDisposiable = d;
                             }
-                        }
-                    });
+
+                            @Override
+                            public void onNext(Long value) {
+                                for (String symbol : SYMBOLS) {
+                                    Observable.zip(HttpUtil.createRequest().fetchKline(symbol, PERIOD).subscribeOn(Schedulers.io()),
+                                            HttpUtil.createRequest().fetchDepth(symbol).subscribeOn(Schedulers.io()),
+                                            (lists, depth) -> new LiveData(lists, depth))
+                                            .subscribeOn(Schedulers.io())
+                                            .observeOn(AndroidSchedulers.mainThread())
+                                            .subscribe(KlineObserver.getObserver(symbol, mTradeType));
+                                }
+                            }
+                        });
+            } else {
+                ToastUtis.showToast("请重新开启服务");
+            }
         }
     }
 
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        processIntent(intent);
-        if (mDisposiable != null && !mDisposiable.isDisposed()) {
-            mDisposiable.dispose();
-            mDisposiable = null;
-            startLoop();
-        } else {
+        if (intent != null) {
+            processIntent(intent);
+            if (mDisposiable != null && !mDisposiable.isDisposed()) {
+                mDisposiable.dispose();
+                mDisposiable = null;
+            }
             startLoop();
         }
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {

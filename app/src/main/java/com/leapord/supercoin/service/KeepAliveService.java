@@ -9,8 +9,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.leapord.supercoin.app.Const;
+import com.leapord.supercoin.app.OkCoin;
+import com.leapord.supercoin.core.TradeManager;
 import com.leapord.supercoin.util.CommonUtil;
+import com.leapord.supercoin.util.SpUtils;
 import com.orhanobut.logger.Logger;
+
+import java.util.ArrayList;
 
 /**
  * @author Biao
@@ -33,7 +39,22 @@ public class KeepAliveService extends JobService {
         Log.i("MyJobDaemonService", "执行了onStartJob方法");
         boolean serviceWork = CommonUtil.isServiceWork(this, LooperService.class.getName());
         if (!serviceWork) {
-            this.startService(new Intent(this, LooperService.class));
+            Intent intent = new Intent(this, LooperService.class);
+            //币种类
+            ArrayList<String> symbols = new ArrayList<>();
+            SpUtils.getString(Const.SELECTED_SYMBOL, OkCoin.USDT.OF);
+            intent.putStringArrayListExtra("SYMBOLS", symbols);
+            //策略
+            int strategy = SpUtils.getInt(Const.SELECTED_STRATEGY, OkCoin.TradeType.T_THORT);
+            intent.putExtra("TRADE_TYPE", strategy);
+
+            //优先级
+            int previous = SpUtils.getInt(Const.SELECTED_PREVIOUS, 1);
+            TradeManager.settMode(previous);
+            String period = SpUtils.getString(Const.SELECTED_PERIOD, OkCoin.TimePeriod.THREE_MIN);
+            intent.putExtra("PERIOD", period);
+
+            this.startService(intent);
             Logger.d("轮询服务重启");
         }
         return true;
