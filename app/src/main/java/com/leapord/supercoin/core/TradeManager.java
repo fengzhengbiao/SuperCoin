@@ -163,11 +163,11 @@ public class TradeManager {
                     break;
                 case 1:
                 case -1:
-                    if (tendencyByKline[3] > 0 && Analyzer.isContinuousDecrease(value.getKLineData(), 3)) {
+                    if (tendencyByKline[3] < 0 && Analyzer.isContinuousDecrease(value.getKLineData(), 3)) {
                         // 上涨回转点
                         Log.i(TAG, "autoTrade: sell " + mSymbol + "---" + System.currentTimeMillis());
                         sellCoins(mSymbol, WAREHOUSE.HALF, Analyzer.getPriceFromDepth(value.getDepth()), 2);
-                    } else if (tendencyByKline[3] > 0) {
+                    } else if (tendencyByKline[3] < 0) {
                         Log.i(TAG, "autoTrade: " + mSymbol + " match many sell rules");
                     } else if (Analyzer.isContinuousDecrease(value.getKLineData(), 3)) {
                         Log.i(TAG, "autoTrade: " + mSymbol + " match some pruchase rules");
