@@ -35,15 +35,15 @@ public class CommonUtil {
     public static String getTendency(int tendency) {
         switch (tendency) {
             case -2:
-                return "高速下跌";
+                return "买卖盘高速下跌";
             case -1:
-                return "慢速下跌";
+                return "买卖盘慢速下跌";
             case 0:
-                return "稳定";
+                return "买卖盘稳定";
             case 1:
-                return "慢速上涨";
+                return "买卖盘慢速上涨";
             case 2:
-                return "高速上涨";
+                return "买卖盘高速上涨";
         }
         return null;
     }

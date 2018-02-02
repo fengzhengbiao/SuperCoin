@@ -45,7 +45,7 @@ public class CoinAdapter extends RecyclerView.Adapter<CoinAdapter.CoinHolder> {
         holder.tvCoinName.setText(klineAnalyzeInfo.getCoinName());
         holder.tvBuy.setText(String.format("%.5f", klineAnalyzeInfo.getBuyPrice()));
         holder.tvSell.setText(String.format("%.5f", klineAnalyzeInfo.getSellPrice()));
-        holder.tvDepth.setText(CommonUtil.getTendency((int) klineAnalyzeInfo.getTendency()));
+        holder.tvDepth.setText(CommonUtil.getTendency(klineAnalyzeInfo.getTendency()));
         holder.tvDepth.setTextColor(Color.parseColor(klineAnalyzeInfo.getTendency() >= 0 ? "#45b10f" : "#d72d21"));
         holder.tvTime.setText("交易时间：" + TimeUtils.formatDate(klineAnalyzeInfo.getTime()));
     }
