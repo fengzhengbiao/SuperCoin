@@ -31,6 +31,7 @@ import io.reactivex.schedulers.Schedulers;
 public class TradeManager {
     private static final String TAG = "TradeManager";
     private static final int STANDARD_DIFF_TIME = 10 * 60 * 1000;
+    private static final int PERIOD_DIFF_TIME = 40 * 60 * 1000;
     private static final double MIN_COIN_AMOUNT = 0.01;
 
     public static int TRADE_MODE = 1;       //1:优先深度  2：优先K线
@@ -130,7 +131,7 @@ public class TradeManager {
      * @param value
      */
     private static void autoTradeOne(String mSymbol, int tendencyByDepth, double[] tendencyByKline, LiveData value) {
-        //        买入
+        //        买入        {tendncy, kStart, kEnd, kFull}
         if (tendencyByDepth == 1 || tendencyByDepth == 2) {     //卖家高价卖出较多  买家低价较少
             switch ((int) tendencyByKline[0]) {
                 case 2:    //立即买
@@ -138,21 +139,21 @@ public class TradeManager {
                     purchase(mSymbol, WAREHOUSE.FULL, Analyzer.getPriceFromDepth(value.getDepth()), 1);
                     break;
                 case 1:
-                case -1:
                     if (tendencyByKline[3] < 0 && Analyzer.isContinuousIncrease(value.getKLineData(), 3)) {
-                        // 下跌回转点
+                        //下跌回转点
                         Log.i(TAG, "autoTrade: purchase " + mSymbol + "---" + System.currentTimeMillis());
                         purchase(mSymbol, WAREHOUSE.HALF, Analyzer.getPriceFromDepth(value.getDepth()), 2);
-                    } else if (tendencyByKline[3] < 0) {
-                        Log.i(TAG, "autoTrade:" + mSymbol + " match many pruchase rules");
-                    } else if (Analyzer.isContinuousDecrease(value.getKLineData(), 3)) {
-                        Log.i(TAG, "autoTrade: " + mSymbol + " match some sell rules");
+                    } else if (tendencyByKline[3] > 0) {
+                        //缓慢增长点
+                        Log.i(TAG, "autoTrade: purchase " + mSymbol + "---" + System.currentTimeMillis());
+                        purchase(mSymbol, WAREHOUSE.HALF, Analyzer.getPriceFromDepth(value.getDepth()), 2);
                     } else {
-                        Log.i(TAG, "autoTrade: " + mSymbol + " match no purchase rules");
+                        Log.i(TAG, "tendency: 买卖盘增长   autoTrade: " + mSymbol + " match no purchase rules");
                     }
                     break;
+                case -1:
                 default:
-                    Log.i(TAG, "autoTrade: " + mSymbol + " match no purchase rules");
+                    Log.i(TAG, "tendency: 买卖盘增长   autoTrade: " + mSymbol + " match no purchase rules");
                     break;
             }
         } else if (tendencyByDepth == -1 || tendencyByDepth == -2) {    //卖出
@@ -161,22 +162,22 @@ public class TradeManager {
                     Log.i(TAG, "autoTrade: sell " + mSymbol + "---" + System.currentTimeMillis());
                     sellCoins(mSymbol, WAREHOUSE.FULL, Analyzer.getPriceFromDepth(value.getDepth()), 1);
                     break;
-                case 1:
                 case -1:
-                    if (tendencyByKline[3] < 0 && Analyzer.isContinuousDecrease(value.getKLineData(), 3)) {
+                    if (tendencyByKline[3] > 0 && Analyzer.isContinuousDecrease(value.getKLineData(), 3)) {
                         // 上涨回转点
                         Log.i(TAG, "autoTrade: sell " + mSymbol + "---" + System.currentTimeMillis());
                         sellCoins(mSymbol, WAREHOUSE.HALF, Analyzer.getPriceFromDepth(value.getDepth()), 2);
                     } else if (tendencyByKline[3] < 0) {
+                        //缓慢下跌点
                         Log.i(TAG, "autoTrade: " + mSymbol + " match many sell rules");
-                    } else if (Analyzer.isContinuousDecrease(value.getKLineData(), 3)) {
-                        Log.i(TAG, "autoTrade: " + mSymbol + " match some pruchase rules");
+                        sellCoins(mSymbol, WAREHOUSE.HALF, Analyzer.getPriceFromDepth(value.getDepth()), 2);
                     } else {
-                        Log.i(TAG, "autoTrade: " + mSymbol + " match no sell rules");
+                        Log.i(TAG, "tendency: 买卖盘下降   autoTrade: " + mSymbol + " match no sell rules");
                     }
                     break;
+                case 1:
                 default:
-                    Log.i(TAG, "autoTrade:  " + mSymbol + " match no purchase rules");
+                    Log.i(TAG, "tendency: 买卖盘下降   autoTrade: " + mSymbol + " match no purchase rules");
                     break;
             }
         } else {
@@ -263,7 +264,7 @@ public class TradeManager {
                         Log.i(TAG, "have many coins");
                     }
                     long diffTime = System.currentTimeMillis() - SpUtils.getLong(symbol + OkCoin.Trade.BUY_MARKET, 0l);
-                    return remainCoin > 0.01 && diffTime > STANDARD_DIFF_TIME;
+                    return remainCoin > 0.01 && diffTime > PERIOD_DIFF_TIME;
                 })    // 当前交易区数量不为0
                 .flatMap(userInfo -> {
                     String coin_type = getCoinZone(symbol);
@@ -278,10 +279,14 @@ public class TradeManager {
                             break;
                         case THREE_FOUR:
                             amount = coinAmount * 3 / 4;
+                            break;
                         case FULL:
                             amount = coinAmount;
                             break;
 
+                    }
+                    if (amount < 8) {
+                        amount = coinAmount;
                     }
                     Log.e(TAG, "purchase: " + coin_type + "  amount:" + amount + "  price: 市价");
                     return HttpUtil.createRequest()
@@ -302,7 +307,7 @@ public class TradeManager {
      * @return
      */
     public static double calculatePrice(int priority, int tradeType, double[] prices) {
-        double calcPrice = tradeType == 1 ? 0 : 100;
+        double calcPrice;
         if (priority == 1) {
             int avgPrice = (int) (100000 * (prices[0] + prices[1]) / 2);
             if (avgPrice % 10 == 0) {
@@ -391,7 +396,7 @@ public class TradeManager {
                         Log.i(TAG, "have no " + symbol + " coins Freezed");
                     }
                     long diffTime = System.currentTimeMillis() - SpUtils.getLong(symbol + OkCoin.Trade.SELL, 0l);
-                    return remainFreeCoin > MIN_COIN_AMOUNT && diffTime > STANDARD_DIFF_TIME;
+                    return remainFreeCoin > MIN_COIN_AMOUNT && diffTime > PERIOD_DIFF_TIME;
                 })
                 .flatMap(userInfo -> {
 
@@ -411,6 +416,9 @@ public class TradeManager {
                         case ONE_FOUR:
                             amount = coinAmount / 4;
                             break;
+                    }
+                    if (coinAmount < 5) {
+                        amount = coinAmount;
                     }
                     Log.e(TAG, "sell: " + coin_type + "  amount:" + amount + "  price: 市价");
                     return HttpUtil.createRequest()
