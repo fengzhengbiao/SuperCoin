@@ -424,7 +424,7 @@ public class TradeManager {
                     return HttpUtil.createRequest()
                             .sellMarket(amount,
                                     symbol,
-                                    OkCoin.Trade.SELL);
+                                    OkCoin.Trade.SELL_MARKET);
 
                 })
                 .subscribeOn(Schedulers.io())

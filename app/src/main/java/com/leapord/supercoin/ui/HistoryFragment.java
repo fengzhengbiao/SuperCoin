@@ -64,7 +64,7 @@ public class HistoryFragment extends BaseFragment implements SwipeRefreshLayout.
         Log.i(TAG, "onRefresh: ");
         Observable.create((ObservableOnSubscribe<List<Trade>>) observableEmitter -> {
             TradeDao tradeDao = CoinApplication.INSTANCE.getDaoSession().getTradeDao();
-            observableEmitter.onNext(tradeDao.queryBuilder().build().list());
+            observableEmitter.onNext(tradeDao.queryBuilder().orderDesc(TradeDao.Properties.CreateTime).build().list());
         })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

@@ -179,7 +179,7 @@ public class ActionFragment extends BaseFragment implements CompoundButton.OnChe
                 break;
             case R.id.rb_15:
                 intent.putExtra("PERIOD", OkCoin.TimePeriod.FIFTEEN_MIN);
-                SpUtils.putString(Const.SELECTED_PERIOD, OkCoin.TimePeriod.FIVE_MIN);
+                SpUtils.putString(Const.SELECTED_PERIOD, OkCoin.TimePeriod.THITY_MIN);
                 break;
             case R.id.rb_30:
                 intent.putExtra("PERIOD", OkCoin.TimePeriod.THITY_MIN);

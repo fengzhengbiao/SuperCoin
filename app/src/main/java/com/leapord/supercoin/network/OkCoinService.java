@@ -51,27 +51,27 @@ public interface OkCoinService {
                                         @Field("symbol") String symbol,
                                         @Field("type") String type          ////交易类型Okcoin.Trade
     );
-
+    @FormUrlEncoded
     @POST("/api/v1/trade.do")
         // 用户下单     市价买入  price传价格
     Observable<TradeResponse> purchaseMarket(@Field("price") double price,      //交易金额（花多少钱买）
                                              @Field("symbol") String symbol,
                                              @Field("type") String type          ////交易类型Okcoin.Trade
     );
-
+    @FormUrlEncoded
     @POST("/api/v1/trade.do")
         // 用户下单     市价卖出  amount传价格
     Observable<TradeResponse> sellMarket(@Field("amount") double amount,      //卖出数量
                                          @Field("symbol") String symbol,
                                          @Field("type") String type          ////交易类型Okcoin.Trade
     );
-
+    @FormUrlEncoded
     @POST("/api/v1/cancel_order.do")
         //取消订单
     Observable<CancelTradeResp> cancelTrade(@Field("symbol") String symbol,
                                             @Field("order_id") String orderId          ////交易类型Okcoin.Trade
     );
-
+    @FormUrlEncoded
     @POST("/api/v1/order_info.do")
     Observable<OrderData> fetchOrderInfo(@Field("order_id") String order_id,
                                          @Field("symbol") String symbol
