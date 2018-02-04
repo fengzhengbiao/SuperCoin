@@ -17,6 +17,7 @@ import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.core.TradeManager;
 import com.leapord.supercoin.service.KeepAliveService;
 import com.leapord.supercoin.service.LooperService;
+import com.leapord.supercoin.util.CommonUtil;
 import com.leapord.supercoin.util.SpUtils;
 import com.leapord.supercoin.util.ToastUtis;
 
@@ -204,7 +205,7 @@ public class ActionFragment extends BaseFragment implements CompoundButton.OnChe
     }
 
 
-    @OnClick({R.id.btn_start, R.id.btn_stop})
+    @OnClick({R.id.btn_start, R.id.btn_stop, R.id.btn_buy, R.id.btn_sell, R.id.btn_isrunning})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_start:
@@ -212,6 +213,15 @@ public class ActionFragment extends BaseFragment implements CompoundButton.OnChe
                 break;
             case R.id.btn_stop:
                 stopLooper();
+                break;
+            case R.id.btn_buy:
+                TradeManager.purchase(SpUtils.getString(Const.SELECTED_SYMBOL, OkCoin.USDT.OF), TradeManager.WAREHOUSE.FULL);
+                break;
+            case R.id.btn_sell:
+                TradeManager.sellCoins(SpUtils.getString(Const.SELECTED_SYMBOL, OkCoin.USDT.OF), TradeManager.WAREHOUSE.FULL);
+                break;
+            case R.id.btn_isrunning:
+                ToastUtis.showToast(CommonUtil.isServiceWork(getContext(), LooperService.class.getName()) ? "正在运行" : "已停止");
                 break;
         }
     }

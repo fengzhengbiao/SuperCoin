@@ -31,7 +31,7 @@ import io.reactivex.schedulers.Schedulers;
 public class TradeManager {
     private static final String TAG = "TradeManager";
     private static final int STANDARD_DIFF_TIME = 10 * 60 * 1000;
-    private static final int PERIOD_DIFF_TIME = 40 * 60 * 1000;
+    private static final int PERIOD_DIFF_TIME = 10 * 60 * 1000;
     private static final double MIN_COIN_AMOUNT = 0.01;
 
     public static int TRADE_MODE = 1;       //1:优先深度  2：优先K线
