@@ -504,72 +504,76 @@ public class TradeManager {
         return symbol.substring(symbol.indexOf('_') + 1);
     }
 
-    public static void autoTrade(String symbol, List<Double> dif, List<Double> dea, List<Double> macd, List<Double> asDif, List<Double> asDea, List<Double> asMacd) {
+    public static void autoTrade(String symbol, List<Double> macd, List<Double> asMacd) {
+        Double endMacd = macd.get(macd.size() - 1);
+        Double endAsMACD = asMacd.get(asMacd.size() - 1);
+        if (endAsMACD > 0 && endMacd > 0) {
+            purchase(symbol, WAREHOUSE.FULL);
+        } else if (endMacd < 0 && endAsMACD < 0) {
+            sellCoins(symbol, WAREHOUSE.FULL);
+        } else {
+            Log.i(TAG, "autoTrade: MACD match no rules");
+        }
+
+    }
+
+    public static void autoTrade(String symbol, List<Double> dif, List<Double> dea, List<Double> macd) {
         int endIndex = macd.size() - 1;
         Double endMacd = macd.get(endIndex);
-        Double endAsMACD = asMacd.get(asMacd.size() - 1);
+
         int tendency = 0;
         for (int i = endIndex - 3; i < endIndex; i++) {
             tendency += (macd.get(i) > 0 ? 1 : -1);
         }
         if (isNearZero(endMacd)) {
             if (tendency == -3) {
-                if (endAsMACD > 0) {
-                    Log.i(TAG, "MACD: cross , previous is negative ");
-                    if (dif.get(endIndex - 3) > 0 && dea.get(endIndex - 3) > 0) {
-                        Log.i(TAG, "MACD: cross , buy full");
-                        purchase(symbol, WAREHOUSE.FULL);
-                    } else {
-                        purchase(symbol, WAREHOUSE.HALF);
-                        Log.i(TAG, "MACD: cross , buy half");
-                    }
+                Log.i(TAG, "MACD: cross , previous is negative ");
+                if (dif.get(endIndex - 3) > 0 && dea.get(endIndex - 3) > 0) {
+                    Log.i(TAG, "MACD: cross , buy full");
+                    purchase(symbol, WAREHOUSE.FULL);
                 } else {
-                    Log.i(TAG, "MACD: cross , previous is negative ,but as macd is negative");
+                    purchase(symbol, WAREHOUSE.HALF);
+                    Log.i(TAG, "MACD: cross , buy half");
                 }
+
             } else if (tendency == 3) {
-                if (endAsMACD < 0) {
-                    Log.i(TAG, "MACD: cross , previous is positive ,sell all ");
-                    sellCoins(symbol, WAREHOUSE.FULL);
-                } else {
-                    Log.i(TAG, "MACD: cross , previous is positive ,but endasmacd is positive ");
-                }
+
+                Log.i(TAG, "MACD: cross , previous is positive ,sell all ");
+                sellCoins(symbol, WAREHOUSE.FULL);
+
             } else {
                 Log.i(TAG, "MACD: no cross , previous is " + (tendency > 0 ? "positive " : "negative"));
             }
 
         } else if (endMacd > 0) {
-            if (endAsMACD > 0) {
-                if (tendency < 1) {
-                    Log.i(TAG, "MACD: cross , buy full ");
-                    purchase(symbol, WAREHOUSE.FULL);
-                } else if (tendency < 2) {
-                    Log.i(TAG, "MACD: cross , buy half ");
-                    purchase(symbol, WAREHOUSE.HALF);
-                } else {
-                    Log.i(TAG, "MACD: no cross nearby, near is " + (tendency > 0 ? "positive " : "negative"));
-                }
+
+            if (tendency < 1) {
+                Log.i(TAG, "MACD: cross , buy full ");
+                purchase(symbol, WAREHOUSE.FULL);
+            } else if (tendency < 2) {
+                Log.i(TAG, "MACD: cross , buy half ");
+                purchase(symbol, WAREHOUSE.HALF);
             } else {
-                Log.i(TAG, "MACD: cross , buy endasmacd is negative ");
+                Log.i(TAG, "MACD: no cross nearby, near is " + (tendency > 0 ? "positive " : "negative"));
             }
+
         } else if (endMacd < 0) {
-            if (endAsMACD < 0) {
-                if (tendency < -1) {
-                    if (dif.get(endIndex - 3) > 0 && dea.get(endIndex - 3) > 0) {
-                        Log.i(TAG, "MACD: cross , sell full");
-                        sellCoins(symbol, WAREHOUSE.FULL);
-                    } else {
-                        Log.i(TAG, "MACD: cross , sell half");
-                        sellCoins(symbol, WAREHOUSE.HALF);
-                    }
-                } else if (tendency < 2) {
-                    Log.i(TAG, "MACD: cross , sell half ");
-                    sellCoins(symbol, WAREHOUSE.HALF);
+
+            if (tendency < -1) {
+                if (dif.get(endIndex - 3) > 0 && dea.get(endIndex - 3) > 0) {
+                    Log.i(TAG, "MACD: cross , sell full");
+                    sellCoins(symbol, WAREHOUSE.FULL);
                 } else {
-                    Log.i(TAG, "MACD: no cross nearby, near is " + (tendency > 0 ? "positive " : "negative"));
+                    Log.i(TAG, "MACD: cross , sell half");
+                    sellCoins(symbol, WAREHOUSE.HALF);
                 }
+            } else if (tendency < 2) {
+                Log.i(TAG, "MACD: cross , sell half ");
+                sellCoins(symbol, WAREHOUSE.HALF);
             } else {
-                Log.i(TAG, "MACD: cross , but end macd positive");
+                Log.i(TAG, "MACD: no cross nearby, near is " + (tendency > 0 ? "positive " : "negative"));
             }
+
         }
     }
 
