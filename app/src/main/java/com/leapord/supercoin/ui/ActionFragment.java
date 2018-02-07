@@ -45,6 +45,8 @@ public class ActionFragment extends BaseFragment implements CompoundButton.OnChe
     RadioButton rbT;
     @BindView(R.id.rb_period)
     RadioButton rbPeriod;
+    @BindView(R.id.rb_dif)
+    RadioButton rbDif;
     @BindView(R.id.radiogroup_previous)
     RadioGroup radioGroup2;
     @BindView(R.id.rb_depth)
@@ -118,6 +120,9 @@ public class ActionFragment extends BaseFragment implements CompoundButton.OnChe
             case OkCoin.TradeType.P_PERIOD:
                 rbPeriod.setChecked(true);
                 break;
+            case OkCoin.TradeType.P_DIF:
+                rbDif.setChecked(true);
+                break;
         }
         String period = SpUtils.getString(Const.SELECTED_PERIOD, OkCoin.TimePeriod.THREE_MIN);
         switch (period) {
@@ -166,9 +171,19 @@ public class ActionFragment extends BaseFragment implements CompoundButton.OnChe
         intent.putStringArrayListExtra("SYMBOLS", symbols);
 
         //策略
-        int checkedRadioButtonId = radioGroup.getCheckedRadioButtonId();
-        int strategy = checkedRadioButtonId == R.id.rb_T ? OkCoin.TradeType.T_THORT : OkCoin.TradeType.P_PERIOD;
-        intent.putExtra("TRADE_TYPE", checkedRadioButtonId == R.id.rb_T ? OkCoin.TradeType.T_THORT : OkCoin.TradeType.P_PERIOD);
+        int strategy = 1;
+        switch (radioGroup.getCheckedRadioButtonId()) {
+            case R.id.rb_T:
+                strategy = OkCoin.TradeType.T_THORT;
+                break;
+            case R.id.rb_period:
+                strategy = OkCoin.TradeType.P_PERIOD;
+                break;
+            case R.id.rb_dif:
+                strategy = OkCoin.TradeType.P_DIF;
+                break;
+        }
+        intent.putExtra("TRADE_TYPE", strategy);
         SpUtils.putInt(Const.SELECTED_STRATEGY, strategy);
 
         //优先级

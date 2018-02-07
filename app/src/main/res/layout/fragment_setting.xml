@@ -49,6 +49,7 @@
             android:layout_weight="1"
             android:text="SWFTC"
             android:textSize="13sp" />
+
         <RadioButton
             android:id="@+id/rb_etc"
             android:layout_width="0dp"
@@ -75,19 +76,28 @@
 
         <RadioButton
             android:id="@+id/rb_T"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="50dp"
+            android:layout_weight="1"
             android:checked="true"
             android:text="T（深度/K线） "
-            android:textSize="13sp" />
+            android:textSize="11sp" />
 
         <RadioButton
             android:id="@+id/rb_period"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="50dp"
-            android:layout_marginLeft="15dp"
-            android:text="波段（DIF/DEA/MACD）"
-            android:textSize="13sp" />
+            android:layout_weight="1"
+            android:text="波段（MACD）"
+            android:textSize="11sp" />
+
+        <RadioButton
+            android:id="@+id/rb_dif"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:text="波段（DIF）"
+            android:textSize="11sp" />
     </RadioGroup>
 
     <TextView
@@ -204,20 +214,24 @@
 
             android:text="关闭" />
     </LinearLayout>
+
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
+
         <Button
             android:id="@+id/btn_isrunning"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="服务是否运行" />
+
         <Button
             android:id="@+id/btn_buy"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="手动买入" />
+
         <Button
             android:id="@+id/btn_sell"
             android:layout_width="wrap_content"

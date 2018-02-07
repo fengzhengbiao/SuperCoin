@@ -97,25 +97,29 @@ public class LooperService extends Service {
 
                             @Override
                             public void onNext(Long value) {
-                                if (mTradeType == OkCoin.TradeType.T_THORT) {
-                                    for (String symbol : SYMBOLS) {
-                                        Observable.zip(HttpUtil.createRequest().fetchKline(symbol, PERIOD).subscribeOn(Schedulers.io()),
-                                                HttpUtil.createRequest().fetchDepth(symbol).subscribeOn(Schedulers.io()),
-                                                (lists, depth) -> new LiveData(lists, null, depth))
-                                                .subscribeOn(Schedulers.io())
-                                                .observeOn(AndroidSchedulers.mainThread())
-                                                .subscribe(KlineObserver.getObserver(symbol, mTradeType));
-                                    }
-                                } else {
-                                    for (String symbol : SYMBOLS) {
-                                        Observable.zip(HttpUtil.createRequest().fetchKline(symbol, PERIOD).subscribeOn(Schedulers.io()),
-                                                HttpUtil.createRequest().fetchKline(symbol, AS_PERIOD).subscribeOn(Schedulers.io()),
-                                                HttpUtil.createRequest().fetchDepth(symbol).subscribeOn(Schedulers.io()),
-                                                (lists, asData, depth) -> new LiveData(lists, asData, depth))
-                                                .subscribeOn(Schedulers.io())
-                                                .observeOn(AndroidSchedulers.mainThread())
-                                                .subscribe(KlineObserver.getObserver(symbol, mTradeType));
-                                    }
+                                switch (mTradeType) {
+                                    case OkCoin.TradeType.T_THORT:
+                                    case OkCoin.TradeType.P_DIF:
+                                        for (String symbol : SYMBOLS) {
+                                            Observable.zip(HttpUtil.createRequest().fetchKline(symbol, PERIOD).subscribeOn(Schedulers.io()),
+                                                    HttpUtil.createRequest().fetchDepth(symbol).subscribeOn(Schedulers.io()),
+                                                    (lists, depth) -> new LiveData(lists, null, depth))
+                                                    .subscribeOn(Schedulers.io())
+                                                    .observeOn(AndroidSchedulers.mainThread())
+                                                    .subscribe(KlineObserver.getObserver(symbol, mTradeType));
+                                        }
+                                        break;
+                                    case OkCoin.TradeType.P_PERIOD:
+                                        for (String symbol : SYMBOLS) {
+                                            Observable.zip(HttpUtil.createRequest().fetchKline(symbol, PERIOD).subscribeOn(Schedulers.io()),
+                                                    HttpUtil.createRequest().fetchKline(symbol, AS_PERIOD).subscribeOn(Schedulers.io()),
+                                                    HttpUtil.createRequest().fetchDepth(symbol).subscribeOn(Schedulers.io()),
+                                                    (lists, asData, depth) -> new LiveData(lists, asData, depth))
+                                                    .subscribeOn(Schedulers.io())
+                                                    .observeOn(AndroidSchedulers.mainThread())
+                                                    .subscribe(KlineObserver.getObserver(symbol, mTradeType));
+                                        }
+                                        break;
                                 }
                             }
                         });

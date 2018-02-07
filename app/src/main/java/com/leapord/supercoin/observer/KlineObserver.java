@@ -56,45 +56,57 @@ public class KlineObserver extends CoinObserver<LiveData> {
         Logger.d("处理K线数据");
         Observable.create((ObservableOnSubscribe<KlineAnalyzeInfo>) emitter -> {
             KlineAnalyzeInfo klineAnalyzeInfo = new KlineAnalyzeInfo();
+            klineAnalyzeInfo.setCoinName(mSymbol);
             double[] priceFromDepth = Analyzer.getPriceFromDepth(value.getDepth());
-            if (mTradeType == OkCoin.TradeType.T_THORT) {       //短线交易
-                int tendencyByDepth = Analyzer.getDepthTendency(value.getDepth());
-                double[] tendencyByKline = Analyzer.getTendencyByKline(value.getKLineData(), 7);
-                boolean gentle = TradeManager.isFastChange(value.getKLineData());
-                if (SpUtils.getBoolean(Const.AUTO_TRANSACTION, false)) {
-                    Log.i(TAG, "onNext: auto trade opened,type is T");
-                    TradeManager.autoTrade(mSymbol, tendencyByDepth, tendencyByKline, value);
-                } else {
-                    Log.i(TAG, "onNext: auto trade closed,type is T");
-                }
-                long timeByNearPoint = Analyzer.getPredicateTimeByNearPoint(value.getKLineData(), 5);
-                klineAnalyzeInfo.setCoinName(mSymbol);
-                klineAnalyzeInfo.setTendency(tendencyByDepth);
-                klineAnalyzeInfo.setSellPrice(priceFromDepth[0]);
-                klineAnalyzeInfo.setBuyPrice(priceFromDepth[1]);
-                klineAnalyzeInfo.setTime(timeByNearPoint);
-            } else {        //长线
-                MACDProcessor.process(value.getKLineData());
-                List<Double> dea = MACDProcessor.getDEA();
-                List<Double> dif = MACDProcessor.getDIF();
-                List<Double> macd = MACDProcessor.getMACD();
-                MACDProcessor.process(value.getAsData());
-                List<Double> asDea = MACDProcessor.getDEA();
-                List<Double> asDif = MACDProcessor.getDIF();
-                List<Double> asMacd = MACDProcessor.getMACD();
-                klineAnalyzeInfo.setCoinName(mSymbol);
-                klineAnalyzeInfo.setTendency(0);
-                if (SpUtils.getBoolean(Const.AUTO_TRANSACTION, false)) {
-                    Log.i(TAG, "onNext: auto trade opened,type is Period");
-                    TradeManager.autoTrade(mSymbol, dif, dea, macd,asDif,asDea,asMacd);
-                } else {
-                    Log.i(TAG, "onNext: auto trade closed ,type is Period");
-                }
-                double[] tendencyByKline = Analyzer.getTendencyByKline(value.getKLineData(), 7);
-                long time = Analyzer.getAutoPredicateTime(value.getKLineData(), (int) tendencyByKline[3]);
-                klineAnalyzeInfo.setSellPrice(priceFromDepth[0]);
-                klineAnalyzeInfo.setBuyPrice(priceFromDepth[1]);
-                klineAnalyzeInfo.setTime(time);
+            klineAnalyzeInfo.setSellPrice(priceFromDepth[0]);
+            klineAnalyzeInfo.setBuyPrice(priceFromDepth[1]);
+            switch (mTradeType) {
+                case OkCoin.TradeType.T_THORT:
+                    int tendencyByDepth = Analyzer.getDepthTendency(value.getDepth());
+                    double[] tendencyByKline = Analyzer.getTendencyByKline(value.getKLineData(), 7);
+                    boolean gentle = TradeManager.isFastChange(value.getKLineData());
+                    if (SpUtils.getBoolean(Const.AUTO_TRANSACTION, false)) {
+                        Log.i(TAG, "onNext: auto trade opened,type is T");
+                        TradeManager.autoTrade(mSymbol, tendencyByDepth, tendencyByKline, value);
+                    } else {
+                        Log.i(TAG, "onNext: auto trade closed,type is T");
+                    }
+                    long timeByNearPoint = Analyzer.getPredicateTimeByNearPoint(value.getKLineData(), 5);
+                    klineAnalyzeInfo.setTendency(tendencyByDepth);
+                    klineAnalyzeInfo.setTime(timeByNearPoint);
+                    break;
+                case OkCoin.TradeType.P_DIF:
+                    MACDProcessor.process(value.getKLineData());
+                    if (SpUtils.getBoolean(Const.AUTO_TRANSACTION, false)) {
+                        Log.i(TAG, "onNext: auto trade opened,type is Period dif");
+                        TradeManager.autoTrade(mSymbol, MACDProcessor.getDIF());
+                    } else {
+                        Log.i(TAG, "onNext: auto trade closed ,type is Period dif");
+                    }
+                    double[] tendencyByKlineDIF = Analyzer.getTendencyByKline(value.getKLineData(), 7);
+                    klineAnalyzeInfo.setTime(Analyzer.getAutoPredicateTime(value.getKLineData(), (int) tendencyByKlineDIF[3]));
+                    break;
+                case OkCoin.TradeType.P_PERIOD:
+                    MACDProcessor.process(value.getKLineData());
+                    List<Double> dea = MACDProcessor.getDEA();
+                    List<Double> dif = MACDProcessor.getDIF();
+                    List<Double> macd = MACDProcessor.getMACD();
+                    MACDProcessor.process(value.getAsData());
+                    List<Double> asDea = MACDProcessor.getDEA();
+                    List<Double> asDif = MACDProcessor.getDIF();
+                    List<Double> asMacd = MACDProcessor.getMACD();
+                    klineAnalyzeInfo.setCoinName(mSymbol);
+                    klineAnalyzeInfo.setTendency(0);
+                    if (SpUtils.getBoolean(Const.AUTO_TRANSACTION, false)) {
+                        Log.i(TAG, "onNext: auto trade opened,type is Period");
+                        TradeManager.autoTrade(mSymbol, dif, dea, macd, asDif, asDea, asMacd);
+                    } else {
+                        Log.i(TAG, "onNext: auto trade closed ,type is Period");
+                    }
+                    double[] tendencyByKline2 = Analyzer.getTendencyByKline(value.getKLineData(), 7);
+                    long time = Analyzer.getAutoPredicateTime(value.getKLineData(), (int) tendencyByKline2[3]);
+                    klineAnalyzeInfo.setTime(time);
+                    break;
             }
             emitter.onNext(klineAnalyzeInfo);
         }).subscribeOn(Schedulers.io())

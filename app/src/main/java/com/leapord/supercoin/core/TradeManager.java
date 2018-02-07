@@ -577,6 +577,10 @@ public class TradeManager {
         return Math.abs(k) < 8E-10;
     }
 
+    public static void autoTrade(String mSymbol, List<Double> dif) {
+
+    }
+
     public enum WAREHOUSE {
         ONE_FOUR, HALF, FULL, THREE_FOUR
     }

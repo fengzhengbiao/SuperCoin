@@ -147,7 +147,7 @@ public class Analyzer {
             if (i < middleIndex) {
                 startPoints.add(i, kPoint[1]);
             } else {
-                endPoints.add(i-middleIndex, kPoint[1]);
+                endPoints.add(i - middleIndex, kPoint[1]);
             }
             fullPoints.add(i, kPoint[1]);
         }
@@ -236,7 +236,6 @@ public class Analyzer {
     }
 
 
-
     /**
      * 是否连续几个点上涨
      *
@@ -295,6 +294,11 @@ public class Analyzer {
             }
         }
         return true;
+    }
+
+    public double[] getTendencyByDIF(List<Double> dif) {
+        WeightedObservedPoints points = new WeightedObservedPoints();
+        return null;
     }
 
     /**
