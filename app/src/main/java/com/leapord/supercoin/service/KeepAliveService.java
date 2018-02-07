@@ -9,9 +9,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.alibaba.fastjson.JSON;
 import com.leapord.supercoin.app.Const;
-import com.leapord.supercoin.app.OkCoin;
-import com.leapord.supercoin.core.TradeManager;
 import com.leapord.supercoin.util.CommonUtil;
 import com.leapord.supercoin.util.SpUtils;
 import com.orhanobut.logger.Logger;
@@ -41,18 +40,14 @@ public class KeepAliveService extends JobService {
         if (!serviceWork) {
             Intent intent = new Intent(this, LooperService.class);
             //币种类
-            ArrayList<String> symbols = new ArrayList<>();
-            SpUtils.getString(Const.SELECTED_SYMBOL, OkCoin.USDT.OF);
+            String symbol = SpUtils.getString(Const.SELECTED_SYMBOL, "");
+            ArrayList<String> symbols = (ArrayList<String>) JSON.parseArray(symbol, String.class);
             intent.putStringArrayListExtra("SYMBOLS", symbols);
-            //策略
-            int strategy = SpUtils.getInt(Const.SELECTED_STRATEGY, OkCoin.TradeType.T_THORT);
-            intent.putExtra("TRADE_TYPE", strategy);
 
-            //优先级
-            int previous = SpUtils.getInt(Const.SELECTED_PREVIOUS, 1);
-            TradeManager.settMode(previous);
-            String period = SpUtils.getString(Const.SELECTED_PERIOD, OkCoin.TimePeriod.THREE_MIN);
-            intent.putExtra("PERIOD", period);
+            String ktime = SpUtils.getString(Const.SELECTED_KTIME, "");
+            ArrayList<String> ktimes = (ArrayList<String>) JSON.parseArray(ktime, String.class);
+            intent.putStringArrayListExtra("KTIMES", ktimes);
+            intent.putExtra("PERIOD", SpUtils.getString(Const.SELECTED_PERIOD, ""));
 
             this.startService(intent);
             Logger.d("轮询服务重启");

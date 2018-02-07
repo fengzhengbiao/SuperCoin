@@ -296,11 +296,6 @@ public class Analyzer {
         return true;
     }
 
-    public double[] getTendencyByDIF(List<Double> dif) {
-        WeightedObservedPoints points = new WeightedObservedPoints();
-        return null;
-    }
-
     /**
      * 获取二次曲线的极点位置
      *

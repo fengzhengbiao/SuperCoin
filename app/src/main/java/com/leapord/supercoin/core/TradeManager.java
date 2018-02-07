@@ -10,6 +10,7 @@ import com.leapord.supercoin.entity.dao.Trade;
 import com.leapord.supercoin.entity.dao.TradeDao;
 import com.leapord.supercoin.entity.http.LiveData;
 import com.leapord.supercoin.entity.http.Order;
+import com.leapord.supercoin.entity.http.TradeResponse;
 import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.TradeObserver;
 import com.leapord.supercoin.util.SpUtils;
@@ -19,6 +20,7 @@ import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 /*********************************************
@@ -241,7 +243,8 @@ public class TradeManager {
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new TradeObserver(symbol, OkCoin.Trade.BUY));
+                .map((Function<TradeResponse, Trade>) tradeResponse -> null)
+                .subscribe(new TradeObserver());
     }
 
     /**
@@ -581,7 +584,25 @@ public class TradeManager {
         return Math.abs(k) < 8E-10;
     }
 
-    public static void autoTrade(String mSymbol, List<Double> dif) {
+
+    public static void autoTrade(String symbol, LiveData value) {
+        int tendency = Analyzer.getDepthTendency(value.getDepth());
+        double[] depth = Analyzer.getPriceFromDepth(value.getDepth());
+        int increasePointCountByKline = Analyzer.getIncreasePointCountByKline(value.getKLineData(), 10);
+        double[] tendencyByKline = Analyzer.getTendencyByKline(value.getKLineData(), 7);
+        boolean continuousIncrease = Analyzer.isContinuousIncrease(value.getKLineData(), 10);
+        boolean continuousDecrease = Analyzer.isContinuousDecrease(value.getKLineData(), 10);
+
+        MACDProcessor.process(value.getKLineData());
+        List<Double> dif = MACDProcessor.getDIF();
+        List<Double> dea = MACDProcessor.getDEA();
+        List<Double> macd = MACDProcessor.getMACD();
+
+        MACDProcessor.process(value.getAsData());
+        List<Double> asDif = MACDProcessor.getDIF();
+        List<Double> asDea = MACDProcessor.getDEA();
+        List<Double> asMacd = MACDProcessor.getMACD();
+
 
     }
 

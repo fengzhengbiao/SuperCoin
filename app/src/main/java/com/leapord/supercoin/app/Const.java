@@ -18,10 +18,9 @@ public interface Const {
 
     String SELECTED_SYMBOL = "user_selected_symbol";
 
-    String SELECTED_STRATEGY = "user_selected_strategy";
 
-    String SELECTED_PERIOD= "user_selected_period";
+    String SELECTED_KTIME = "user_selected_ktimes";
 
-   String  SELECTED_PREVIOUS = "user_selected_previous";
+    String SELECTED_PERIOD = "user_selected_period";
 
 }
