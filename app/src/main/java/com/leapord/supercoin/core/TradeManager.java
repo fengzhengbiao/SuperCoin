@@ -5,10 +5,10 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.leapord.supercoin.app.CoinApplication;
+import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.entity.dao.Trade;
 import com.leapord.supercoin.entity.dao.TradeDao;
 import com.leapord.supercoin.entity.http.LiveData;
-import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.entity.http.Order;
 import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.TradeObserver;
@@ -297,7 +297,7 @@ public class TradeManager {
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new TradeObserver(symbol, OkCoin.Trade.BUY));
+                .subscribe(new TradeObserver(symbol, OkCoin.Trade.BUY_MARKET));
     }
 
     /**
@@ -429,7 +429,7 @@ public class TradeManager {
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new TradeObserver(symbol, OkCoin.Trade.SELL));
+                .subscribe(new TradeObserver(symbol, OkCoin.Trade.SELL_MARKET));
     }
 
     /**
@@ -504,54 +504,71 @@ public class TradeManager {
         return symbol.substring(symbol.indexOf('_') + 1);
     }
 
-    public static void autoTrade(String symbol, List<Double> dif, List<Double> dea, List<Double> macd) {
+    public static void autoTrade(String symbol, List<Double> dif, List<Double> dea, List<Double> macd, List<Double> asDif, List<Double> asDea, List<Double> asMacd) {
         int endIndex = macd.size() - 1;
         Double endMacd = macd.get(endIndex);
+        Double endAsMACD = asMacd.get(asMacd.size() - 1);
         int tendency = 0;
         for (int i = endIndex - 3; i < endIndex; i++) {
             tendency += (macd.get(i) > 0 ? 1 : -1);
         }
         if (isNearZero(endMacd)) {
             if (tendency == -3) {
-                Log.i(TAG, "MACD: cross , previous is negative ");
-                if (dif.get(endIndex - 3) > 0 && dea.get(endIndex - 3) > 0) {
-                    Log.i(TAG, "MACD: cross , buy full");
-                    purchase(symbol, WAREHOUSE.FULL);
+                if (endAsMACD > 0) {
+                    Log.i(TAG, "MACD: cross , previous is negative ");
+                    if (dif.get(endIndex - 3) > 0 && dea.get(endIndex - 3) > 0) {
+                        Log.i(TAG, "MACD: cross , buy full");
+                        purchase(symbol, WAREHOUSE.FULL);
+                    } else {
+                        purchase(symbol, WAREHOUSE.HALF);
+                        Log.i(TAG, "MACD: cross , buy half");
+                    }
                 } else {
-                    purchase(symbol, WAREHOUSE.HALF);
-                    Log.i(TAG, "MACD: cross , buy half");
+                    Log.i(TAG, "MACD: cross , previous is negative ,but as macd is negative");
                 }
             } else if (tendency == 3) {
-                Log.i(TAG, "MACD: cross , previous is positive ,sell all ");
-                sellCoins(symbol, WAREHOUSE.FULL);
+                if (endAsMACD < 0) {
+                    Log.i(TAG, "MACD: cross , previous is positive ,sell all ");
+                    sellCoins(symbol, WAREHOUSE.FULL);
+                } else {
+                    Log.i(TAG, "MACD: cross , previous is positive ,but endasmacd is positive ");
+                }
             } else {
                 Log.i(TAG, "MACD: no cross , previous is " + (tendency > 0 ? "positive " : "negative"));
             }
 
         } else if (endMacd > 0) {
-            if (tendency < 1) {
-                Log.i(TAG, "MACD: cross , buy full ");
-                purchase(symbol, WAREHOUSE.FULL);
-            } else if (tendency < 2) {
-                Log.i(TAG, "MACD: cross , buy half ");
-                purchase(symbol, WAREHOUSE.HALF);
+            if (endAsMACD > 0) {
+                if (tendency < 1) {
+                    Log.i(TAG, "MACD: cross , buy full ");
+                    purchase(symbol, WAREHOUSE.FULL);
+                } else if (tendency < 2) {
+                    Log.i(TAG, "MACD: cross , buy half ");
+                    purchase(symbol, WAREHOUSE.HALF);
+                } else {
+                    Log.i(TAG, "MACD: no cross nearby, near is " + (tendency > 0 ? "positive " : "negative"));
+                }
             } else {
-                Log.i(TAG, "MACD: no cross nearby, near is " + (tendency > 0 ? "positive " : "negative"));
+                Log.i(TAG, "MACD: cross , buy endasmacd is negative ");
             }
         } else if (endMacd < 0) {
-            if (tendency < -1) {
-                if (dif.get(endIndex - 3) > 0 && dea.get(endIndex - 3) > 0) {
-                    Log.i(TAG, "MACD: cross , sell full");
-                    sellCoins(symbol, WAREHOUSE.FULL);
-                } else {
-                    Log.i(TAG, "MACD: cross , sell half");
+            if (endAsMACD < 0) {
+                if (tendency < -1) {
+                    if (dif.get(endIndex - 3) > 0 && dea.get(endIndex - 3) > 0) {
+                        Log.i(TAG, "MACD: cross , sell full");
+                        sellCoins(symbol, WAREHOUSE.FULL);
+                    } else {
+                        Log.i(TAG, "MACD: cross , sell half");
+                        sellCoins(symbol, WAREHOUSE.HALF);
+                    }
+                } else if (tendency < 2) {
+                    Log.i(TAG, "MACD: cross , sell half ");
                     sellCoins(symbol, WAREHOUSE.HALF);
+                } else {
+                    Log.i(TAG, "MACD: no cross nearby, near is " + (tendency > 0 ? "positive " : "negative"));
                 }
-            } else if (tendency < 2) {
-                Log.i(TAG, "MACD: cross , sell half ");
-                sellCoins(symbol, WAREHOUSE.HALF);
             } else {
-                Log.i(TAG, "MACD: no cross nearby, near is " + (tendency > 0 ? "positive " : "negative"));
+                Log.i(TAG, "MACD: cross , but end macd positive");
             }
         }
     }

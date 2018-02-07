@@ -78,11 +78,15 @@ public class KlineObserver extends CoinObserver<LiveData> {
                 List<Double> dea = MACDProcessor.getDEA();
                 List<Double> dif = MACDProcessor.getDIF();
                 List<Double> macd = MACDProcessor.getMACD();
+                MACDProcessor.process(value.getAsData());
+                List<Double> asDea = MACDProcessor.getDEA();
+                List<Double> asDif = MACDProcessor.getDIF();
+                List<Double> asMacd = MACDProcessor.getMACD();
                 klineAnalyzeInfo.setCoinName(mSymbol);
                 klineAnalyzeInfo.setTendency(0);
                 if (SpUtils.getBoolean(Const.AUTO_TRANSACTION, false)) {
                     Log.i(TAG, "onNext: auto trade opened,type is Period");
-                    TradeManager.autoTrade(mSymbol, dif, dea, macd);
+                    TradeManager.autoTrade(mSymbol, dif, dea, macd,asDif,asDea,asMacd);
                 } else {
                     Log.i(TAG, "onNext: auto trade closed ,type is Period");
                 }

@@ -39,6 +39,7 @@ import io.reactivex.schedulers.Schedulers;
 public class LooperService extends Service {
     private final static int GRAY_SERVICE_ID = 1;
     private String PERIOD = OkCoin.TimePeriod.THREE_MIN;
+    private String AS_PERIOD = OkCoin.TimePeriod.FIFTEEN_MIN;
     private List<String> SYMBOLS = new ArrayList<>();
     private Disposable mDisposiable;
     private int mTradeType = OkCoin.TradeType.T_THORT;
@@ -56,7 +57,7 @@ public class LooperService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.i("LooperService", "onCreate: 服务启动");
-        ToastUtis.showToast("服务已开启");
+
     }
 
     private void startLoop() {
@@ -96,13 +97,25 @@ public class LooperService extends Service {
 
                             @Override
                             public void onNext(Long value) {
-                                for (String symbol : SYMBOLS) {
-                                    Observable.zip(HttpUtil.createRequest().fetchKline(symbol, PERIOD).subscribeOn(Schedulers.io()),
-                                            HttpUtil.createRequest().fetchDepth(symbol).subscribeOn(Schedulers.io()),
-                                            (lists, depth) -> new LiveData(lists, depth))
-                                            .subscribeOn(Schedulers.io())
-                                            .observeOn(AndroidSchedulers.mainThread())
-                                            .subscribe(KlineObserver.getObserver(symbol, mTradeType));
+                                if (mTradeType == OkCoin.TradeType.T_THORT) {
+                                    for (String symbol : SYMBOLS) {
+                                        Observable.zip(HttpUtil.createRequest().fetchKline(symbol, PERIOD).subscribeOn(Schedulers.io()),
+                                                HttpUtil.createRequest().fetchDepth(symbol).subscribeOn(Schedulers.io()),
+                                                (lists, depth) -> new LiveData(lists, null, depth))
+                                                .subscribeOn(Schedulers.io())
+                                                .observeOn(AndroidSchedulers.mainThread())
+                                                .subscribe(KlineObserver.getObserver(symbol, mTradeType));
+                                    }
+                                } else {
+                                    for (String symbol : SYMBOLS) {
+                                        Observable.zip(HttpUtil.createRequest().fetchKline(symbol, PERIOD).subscribeOn(Schedulers.io()),
+                                                HttpUtil.createRequest().fetchKline(symbol, AS_PERIOD).subscribeOn(Schedulers.io()),
+                                                HttpUtil.createRequest().fetchDepth(symbol).subscribeOn(Schedulers.io()),
+                                                (lists, asData, depth) -> new LiveData(lists, asData, depth))
+                                                .subscribeOn(Schedulers.io())
+                                                .observeOn(AndroidSchedulers.mainThread())
+                                                .subscribe(KlineObserver.getObserver(symbol, mTradeType));
+                                    }
                                 }
                             }
                         });
@@ -115,6 +128,7 @@ public class LooperService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        ToastUtis.showToast("服务已开启");
         if (intent != null) {
             processIntent(intent);
             if (mDisposiable != null && !mDisposiable.isDisposed()) {
@@ -137,13 +151,30 @@ public class LooperService extends Service {
             String period = intent.getStringExtra("PERIOD");
             mTradeType = intent.getIntExtra("TRADE_TYPE", OkCoin.TradeType.T_THORT);
             ArrayList<String> symbols = intent.getStringArrayListExtra("SYMBOLS");
-            if (mTradeType == OkCoin.TradeType.P_PERIOD) {
-                PERIOD = OkCoin.TimePeriod.THITY_MIN;
-            } else {
-                PERIOD = OkCoin.TimePeriod.THREE_MIN;
-            }
             if (!TextUtils.isEmpty(period)) {
                 PERIOD = period;
+            }
+            if (mTradeType == OkCoin.TradeType.P_PERIOD) {
+                switch (PERIOD) {
+                    case OkCoin.TimePeriod.THREE_MIN:
+                        AS_PERIOD = OkCoin.TimePeriod.FIVE_MIN;
+                        break;
+                    case OkCoin.TimePeriod.FIVE_MIN:
+                        AS_PERIOD = OkCoin.TimePeriod.FIFTEEN_MIN;
+                        break;
+                    case OkCoin.TimePeriod.FIFTEEN_MIN:
+                        AS_PERIOD = OkCoin.TimePeriod.THITY_MIN;
+                        break;
+                    case OkCoin.TimePeriod.THITY_MIN:
+                        AS_PERIOD = OkCoin.TimePeriod.ONE_HOUR;
+                        break;
+                    case OkCoin.TimePeriod.ONE_HOUR:
+                        AS_PERIOD = OkCoin.TimePeriod.TWO_HOUR;
+                        break;
+                    case OkCoin.TimePeriod.TWO_HOUR:
+                        AS_PERIOD = OkCoin.TimePeriod.FOUR_HOUR;
+                        break;
+                }
             }
             if (symbols != null && symbols.size() > 0) {
                 SYMBOLS.clear();

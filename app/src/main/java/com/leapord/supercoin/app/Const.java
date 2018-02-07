@@ -13,6 +13,8 @@ public interface Const {
 
     String TRADE_SYMBOL = "trade_symbol";
 
+    String WAREHOUSE = "last_buy_amount";
+
 
     String SELECTED_SYMBOL = "user_selected_symbol";
 

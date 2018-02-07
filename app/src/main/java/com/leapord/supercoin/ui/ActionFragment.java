@@ -62,6 +62,8 @@ public class ActionFragment extends BaseFragment implements CompoundButton.OnChe
     RadioButton rbLight;
     @BindView(R.id.rb_swftc)
     RadioButton rbSwftc;
+    @BindView(R.id.rb_etc)
+    RadioButton rbETC;
 
     @BindView(R.id.rb_3)
     RadioButton rb3;
@@ -103,6 +105,9 @@ public class ActionFragment extends BaseFragment implements CompoundButton.OnChe
                 break;
             case OkCoin.USDT.SWFTC:
                 rbSwftc.setChecked(true);
+                break;
+            case OkCoin.USDT.ETC:
+                rbETC.setChecked(true);
                 break;
         }
         int stragy = SpUtils.getInt(Const.SELECTED_STRATEGY, OkCoin.TradeType.T_THORT);
@@ -152,6 +157,10 @@ public class ActionFragment extends BaseFragment implements CompoundButton.OnChe
             case R.id.rb_swftc:
                 symbols.add(OkCoin.USDT.SWFTC);
                 SpUtils.putString(Const.SELECTED_SYMBOL, OkCoin.USDT.SWFTC);
+                break;
+            case R.id.rb_etc:
+                symbols.add(OkCoin.USDT.ETC);
+                SpUtils.putString(Const.SELECTED_SYMBOL, OkCoin.USDT.ETC);
                 break;
         }
         intent.putStringArrayListExtra("SYMBOLS", symbols);
