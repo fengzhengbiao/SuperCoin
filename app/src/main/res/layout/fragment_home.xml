@@ -16,10 +16,12 @@
             android:text="买入"
             android:textColor="@color/colorPrimary"
             android:textSize="15sp" />
+
         <CheckBox
             android:layout_width="wrap_content"
-            android:text="买卖盘快速增长"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="买卖盘快速增长" />
+
 
         <TextView
             android:layout_width="wrap_content"

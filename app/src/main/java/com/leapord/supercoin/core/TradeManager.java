@@ -8,9 +8,10 @@ import com.leapord.supercoin.app.CoinApplication;
 import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.entity.dao.Trade;
 import com.leapord.supercoin.entity.dao.TradeDao;
+import com.leapord.supercoin.entity.event.OrderEvent;
 import com.leapord.supercoin.entity.http.LiveData;
 import com.leapord.supercoin.entity.http.Order;
-import com.leapord.supercoin.entity.http.TradeResponse;
+import com.leapord.supercoin.entity.http.OrderTransform;
 import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.TradeObserver;
 import com.leapord.supercoin.util.SpUtils;
@@ -20,7 +21,6 @@ import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 /*********************************************
@@ -36,34 +36,8 @@ public class TradeManager {
     private static final int PERIOD_DIFF_TIME = 10 * 60 * 1000;
     private static final double MIN_COIN_AMOUNT = 0.01;
 
-    public static int TRADE_MODE = 1;       //1:优先深度  2：优先K线
 
 
-    public static void settMode(int tMode) {
-        TRADE_MODE = tMode;
-    }
-
-    /**
-     * 自动交易
-     *
-     * @param mSymbol
-     * @param tendencyByDepth 买卖盘趋势
-     * @param tendencyByKline 【计算趋势，起始趋势，结束趋势，总体趋势】
-     * @param value           此刻数据
-     */
-    public static void autoTrade(String mSymbol, int tendencyByDepth, double[] tendencyByKline, LiveData value) {
-        switch (TRADE_MODE) {
-            case 1:
-                Log.i(TAG, "autoTrade: low risk");
-                autoTradeOne(mSymbol, tendencyByDepth, tendencyByKline, value);
-                break;
-            case 2:
-                Log.i(TAG, "autoTrade: high risk");
-                autoTradeTwo(mSymbol, tendencyByDepth, tendencyByKline, value);
-                break;
-        }
-
-    }
 
     /**
      * z
@@ -212,39 +186,51 @@ public class TradeManager {
                     return remainCoin > 0.01 && diffTime > STANDARD_DIFF_TIME;
                 })    // 当前交易区数量不为0
                 .flatMap(userInfo -> {
-                    double amount = 0;
                     String coin_type = getCoinZone(symbol);
                     double coinAmount = Double.parseDouble(userInfo.getInfo().getFunds().getFree().get(coin_type));
                     double price = calculatePrice(priority, 1, prices);
-                    switch (warehouse) {
-                        case ONE_FOUR:
-                            amount = coinAmount / (4 * price);
-                            break;
-                        case HALF:
-                            amount = coinAmount / (2 * price);
-                            break;
-                        case THREE_FOUR:
-                            amount = coinAmount * 3 / (4 * price);
-                            break;
-                        case FULL:
-                            amount = coinAmount / price;
-                            break;
-                    }
-                    if (coinAmount < 1) {
-                        amount = coinAmount / price;
-                    }
+                    double amount = calculateAmount(warehouse, coinAmount, price);
                     Log.e(TAG, "purchase: " + coin_type + "  amount:" + amount + "  price:" + price);
-                    return HttpUtil.createRequest()
-                            .makeTrade(amount,
-                                    price,
-                                    symbol,
-                                    OkCoin.Trade.BUY);
+                    return Observable.zip(Observable.just(new OrderEvent(amount, price)),
+                            HttpUtil.createRequest().makeTrade(amount, price, symbol, OkCoin.Trade.BUY),
+                            OrderTransform::new);
 
                 })
+                .map(oderTransform -> {
+                            Trade trade = new Trade();
+                            trade.setSymbol(symbol);
+                            trade.setAmount(String.valueOf(oderTransform.getEvent().getAmount()));
+                            trade.setPrice(String.valueOf(oderTransform.getEvent().getPrice()));
+                            trade.setOrderId(oderTransform.getResponse().getOrder_id());
+                            trade.setSellType(OkCoin.Trade.BUY);
+                            trade.setStatus(oderTransform.getResponse().isResult());
+                            return trade;
+                        }
+                )
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .map((Function<TradeResponse, Trade>) tradeResponse -> null)
                 .subscribe(new TradeObserver());
+    }
+
+    private static double calculateAmount(WAREHOUSE warehouse, double coinAmount, double price) {
+        double amount = 0;
+        switch (warehouse) {
+            case ONE_FOUR:
+                amount = coinAmount / (4 * price);
+                break;
+            case HALF:
+                amount = coinAmount / (2 * price);
+                break;
+            case THREE_FOUR:
+                amount = coinAmount * 3 / (4 * price);
+                break;
+            case FULL:
+                amount = coinAmount / price;
+                break;
+        }
+        if (coinAmount < 1) {
+            amount = coinAmount / price;
+        }
+        return amount;
     }
 
     /**
@@ -269,38 +255,49 @@ public class TradeManager {
                     long diffTime = System.currentTimeMillis() - SpUtils.getLong(symbol + OkCoin.Trade.BUY_MARKET, 0l);
                     return remainCoin > 0.01 && diffTime > PERIOD_DIFF_TIME;
                 })    // 当前交易区数量不为0
-                .flatMap(userInfo -> {
+                .flatMap(info -> {
                     String coin_type = getCoinZone(symbol);
-                    double coinAmount = Double.parseDouble(userInfo.getInfo().getFunds().getFree().get(coin_type));
-                    double amount = 0;
-                    switch (warehouse) {
-                        case ONE_FOUR:
-                            amount = coinAmount / 4;
-                            break;
-                        case HALF:
-                            amount = coinAmount / 2;
-                            break;
-                        case THREE_FOUR:
-                            amount = coinAmount * 3 / 4;
-                            break;
-                        case FULL:
-                            amount = coinAmount;
-                            break;
-
-                    }
-                    if (amount < 8) {
-                        amount = coinAmount;
-                    }
+                    double coinAmount = Double.parseDouble(info.getInfo().getFunds().getFree().get(coin_type));
+                    double amount = calcFreeCoin(warehouse, coinAmount);
                     Log.e(TAG, "purchase: " + coin_type + "  amount:" + amount + "  price: 市价");
-                    return HttpUtil.createRequest()
-                            .purchaseMarket(amount,
-                                    symbol,
-                                    OkCoin.Trade.BUY_MARKET);
-
+                    return Observable.zip(Observable.just(new OrderEvent(amount,0.00)),
+                            HttpUtil.createRequest().purchaseMarket(amount, symbol, OkCoin.Trade.BUY_MARKET),OrderTransform::new);
                 })
+                .map(oderTransform -> {
+                            Trade trade = new Trade();
+                            trade.setSymbol(symbol);
+                            trade.setAmount(String.valueOf(oderTransform.getEvent().getAmount()));
+                            trade.setPrice(String.valueOf(oderTransform.getEvent().getPrice()));
+                            trade.setOrderId(oderTransform.getResponse().getOrder_id());
+                            trade.setSellType(OkCoin.Trade.BUY_MARKET);
+                            trade.setStatus(oderTransform.getResponse().isResult());
+                            return trade;
+                        })
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new TradeObserver(symbol, OkCoin.Trade.BUY_MARKET));
+                .subscribe(new TradeObserver());
+    }
+
+    private static double calcFreeCoin(WAREHOUSE warehouse, double coinAmount) {
+        double amount = 0;
+        switch (warehouse) {
+            case ONE_FOUR:
+                amount = coinAmount / 4;
+                break;
+            case HALF:
+                amount = coinAmount / 2;
+                break;
+            case THREE_FOUR:
+                amount = coinAmount * 3 / 4;
+                break;
+            case FULL:
+                amount = coinAmount;
+                break;
+
+        }
+        if (amount < 8) {
+            amount = coinAmount;
+        }
+        return amount;
     }
 
     /**
@@ -352,35 +349,30 @@ public class TradeManager {
                     long diffTime = System.currentTimeMillis() - SpUtils.getLong(symbol + OkCoin.Trade.SELL, 0l);
                     return remainFreeCoin > MIN_COIN_AMOUNT && diffTime > STANDARD_DIFF_TIME;
                 })
-                .flatMap(userInfo -> {
-                    double amount = 0;
+                .flatMap(info -> {
                     String coin_type = getCoinName(symbol);
-                    double coinAmount = Double.parseDouble(userInfo.getInfo().getFunds().getFree().get(coin_type));
+                    double coinAmount = Double.parseDouble(info.getInfo().getFunds().getFree().get(coin_type));
                     double price = calculatePrice(priority, 2, prices);
-                    switch (warehouse) {
-                        case ONE_FOUR:
-                            amount = coinAmount / (4 * price);
-                            break;
-                        case HALF:
-                            amount = coinAmount / (2 * price);
-                            break;
-                        case THREE_FOUR:
-                            amount = coinAmount * 3 / (4 * price);
-                            break;
-                        case FULL:
-                            amount = coinAmount / price;
-                            break;
-                    }
+                    double amount = calculateAmount(warehouse,coinAmount,price);
                     Log.e(TAG, "sell: " + coin_type + "  amount:" + amount + "  price:" + price);
-                    return HttpUtil.createRequest()
+                    return Observable.zip(Observable.just(new OrderEvent(amount,price)),HttpUtil.createRequest()
                             .makeTrade(amount, price,
                                     symbol,
-                                    OkCoin.Trade.SELL);
+                                    OkCoin.Trade.SELL),OrderTransform::new);
 
                 })
+                .map(oderTransform -> {
+                    Trade trade = new Trade();
+                    trade.setSymbol(symbol);
+                    trade.setAmount(String.valueOf(oderTransform.getEvent().getAmount()));
+                    trade.setPrice(String.valueOf(oderTransform.getEvent().getPrice()));
+                    trade.setOrderId(oderTransform.getResponse().getOrder_id());
+                    trade.setSellType(OkCoin.Trade.BUY_MARKET);
+                    trade.setStatus(oderTransform.getResponse().isResult());
+                    return trade;
+                })
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new TradeObserver(symbol, OkCoin.Trade.SELL));
+                .subscribe(new TradeObserver());
     }
 
 
@@ -402,7 +394,6 @@ public class TradeManager {
                     return remainFreeCoin > MIN_COIN_AMOUNT && diffTime > PERIOD_DIFF_TIME;
                 })
                 .flatMap(userInfo -> {
-
                     String coin_type = getCoinName(symbol);
                     double coinAmount = Double.parseDouble(userInfo.getInfo().getFunds().getFree().get(coin_type));
                     double amount = 0;
@@ -424,15 +415,22 @@ public class TradeManager {
                         amount = coinAmount;
                     }
                     Log.e(TAG, "sell: " + coin_type + "  amount:" + amount + "  price: 市价");
-                    return HttpUtil.createRequest()
-                            .sellMarket(amount,
-                                    symbol,
-                                    OkCoin.Trade.SELL_MARKET);
+                    return Observable.zip(Observable.just(new OrderEvent(amount,0.00)),HttpUtil.createRequest()
+                            .sellMarket(amount, symbol, OkCoin.Trade.SELL_MARKET),OrderTransform::new);
 
                 })
+                .map(oderTransform -> {
+                    Trade trade = new Trade();
+                    trade.setSymbol(symbol);
+                    trade.setAmount(String.valueOf(oderTransform.getEvent().getAmount()));
+                    trade.setPrice(String.valueOf(oderTransform.getEvent().getPrice()));
+                    trade.setOrderId(oderTransform.getResponse().getOrder_id());
+                    trade.setSellType(OkCoin.Trade.SELL_MARKET);
+                    trade.setStatus(oderTransform.getResponse().isResult());
+                    return trade;
+                })
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new TradeObserver(symbol, OkCoin.Trade.SELL_MARKET));
+                .subscribe(new TradeObserver());
     }
 
     /**
