@@ -37,8 +37,6 @@ public class TradeManager {
     private static final double MIN_COIN_AMOUNT = 0.01;
 
 
-
-
     /**
      * z
      *
@@ -260,19 +258,19 @@ public class TradeManager {
                     double coinAmount = Double.parseDouble(info.getInfo().getFunds().getFree().get(coin_type));
                     double amount = calcFreeCoin(warehouse, coinAmount);
                     Log.e(TAG, "purchase: " + coin_type + "  amount:" + amount + "  price: 市价");
-                    return Observable.zip(Observable.just(new OrderEvent(amount,0.00)),
-                            HttpUtil.createRequest().purchaseMarket(amount, symbol, OkCoin.Trade.BUY_MARKET),OrderTransform::new);
+                    return Observable.zip(Observable.just(new OrderEvent(amount, 0.00)),
+                            HttpUtil.createRequest().purchaseMarket(amount, symbol, OkCoin.Trade.BUY_MARKET), OrderTransform::new);
                 })
                 .map(oderTransform -> {
-                            Trade trade = new Trade();
-                            trade.setSymbol(symbol);
-                            trade.setAmount(String.valueOf(oderTransform.getEvent().getAmount()));
-                            trade.setPrice(String.valueOf(oderTransform.getEvent().getPrice()));
-                            trade.setOrderId(oderTransform.getResponse().getOrder_id());
-                            trade.setSellType(OkCoin.Trade.BUY_MARKET);
-                            trade.setStatus(oderTransform.getResponse().isResult());
-                            return trade;
-                        })
+                    Trade trade = new Trade();
+                    trade.setSymbol(symbol);
+                    trade.setAmount(String.valueOf(oderTransform.getEvent().getAmount()));
+                    trade.setPrice(String.valueOf(oderTransform.getEvent().getPrice()));
+                    trade.setOrderId(oderTransform.getResponse().getOrder_id());
+                    trade.setSellType(OkCoin.Trade.BUY_MARKET);
+                    trade.setStatus(oderTransform.getResponse().isResult());
+                    return trade;
+                })
                 .subscribeOn(Schedulers.io())
                 .subscribe(new TradeObserver());
     }
@@ -353,12 +351,12 @@ public class TradeManager {
                     String coin_type = getCoinName(symbol);
                     double coinAmount = Double.parseDouble(info.getInfo().getFunds().getFree().get(coin_type));
                     double price = calculatePrice(priority, 2, prices);
-                    double amount = calculateAmount(warehouse,coinAmount,price);
+                    double amount = calculateAmount(warehouse, coinAmount, price);
                     Log.e(TAG, "sell: " + coin_type + "  amount:" + amount + "  price:" + price);
-                    return Observable.zip(Observable.just(new OrderEvent(amount,price)),HttpUtil.createRequest()
+                    return Observable.zip(Observable.just(new OrderEvent(amount, price)), HttpUtil.createRequest()
                             .makeTrade(amount, price,
                                     symbol,
-                                    OkCoin.Trade.SELL),OrderTransform::new);
+                                    OkCoin.Trade.SELL), OrderTransform::new);
 
                 })
                 .map(oderTransform -> {
@@ -415,8 +413,8 @@ public class TradeManager {
                         amount = coinAmount;
                     }
                     Log.e(TAG, "sell: " + coin_type + "  amount:" + amount + "  price: 市价");
-                    return Observable.zip(Observable.just(new OrderEvent(amount,0.00)),HttpUtil.createRequest()
-                            .sellMarket(amount, symbol, OkCoin.Trade.SELL_MARKET),OrderTransform::new);
+                    return Observable.zip(Observable.just(new OrderEvent(amount, 0.00)), HttpUtil.createRequest()
+                            .sellMarket(amount, symbol, OkCoin.Trade.SELL_MARKET), OrderTransform::new);
 
                 })
                 .map(oderTransform -> {
@@ -591,15 +589,9 @@ public class TradeManager {
         boolean continuousIncrease = Analyzer.isContinuousIncrease(value.getKLineData(), 10);
         boolean continuousDecrease = Analyzer.isContinuousDecrease(value.getKLineData(), 10);
 
-        MACDProcessor.process(value.getKLineData());
-        List<Double> dif = MACDProcessor.getDIF();
-        List<Double> dea = MACDProcessor.getDEA();
-        List<Double> macd = MACDProcessor.getMACD();
-
-        MACDProcessor.process(value.getAsData());
-        List<Double> asDif = MACDProcessor.getDIF();
-        List<Double> asDea = MACDProcessor.getDEA();
-        List<Double> asMacd = MACDProcessor.getMACD();
+        KlineCalculator calculator = new KlineCalculator(value.getKLineData());
+        List<Double> macds = calculator.computeMACDS();
+        List<Double> deas = calculator.computeDEAS();
 
 
     }
