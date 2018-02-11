@@ -8,15 +8,18 @@ import com.leapord.supercoin.app.CoinApplication;
 import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.entity.dao.Trade;
 import com.leapord.supercoin.entity.dao.TradeDao;
+import com.leapord.supercoin.entity.event.Analysis;
 import com.leapord.supercoin.entity.event.OrderEvent;
 import com.leapord.supercoin.entity.http.LiveData;
 import com.leapord.supercoin.entity.http.Order;
 import com.leapord.supercoin.entity.http.OrderTransform;
+import com.leapord.supercoin.filter.Filter;
 import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.TradeObserver;
 import com.leapord.supercoin.util.SpUtils;
 import com.leapord.supercoin.util.ToastUtis;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -35,6 +38,52 @@ public class TradeManager {
     private static final int STANDARD_DIFF_TIME = 10 * 60 * 1000;
     private static final int PERIOD_DIFF_TIME = 10 * 60 * 1000;
     private static final double MIN_COIN_AMOUNT = 0.01;
+
+    private static List<Filter> mFilters;
+    private static TradeManager sTradeManager = null;
+
+    private TradeManager() {
+    }
+
+    public static TradeManager getInstance() {
+        if (sTradeManager == null) {
+            synchronized (TradeManager.class) {
+                sTradeManager = new TradeManager();
+            }
+        }
+        return sTradeManager;
+    }
+
+    public TradeManager addFilter(Filter filter) {
+        if (mFilters == null) {
+            mFilters = new ArrayList<>();
+        }
+        mFilters.add(filter);
+        return this;
+    }
+
+    public TradeManager removeFilter(Filter filter) {
+        if (mFilters != null) {
+            mFilters.remove(filter);
+        }
+        return this;
+    }
+
+    public TradeManager clearFilter() {
+        if (mFilters != null) {
+            mFilters.clear();
+        }
+        return this;
+    }
+
+    public Analysis process(LiveData data) {
+        Analysis analysis = new Analysis();
+        analysis.setOriginData(data);
+        for (Filter filter : mFilters) {
+            analysis = filter.intercept(analysis);
+        }
+        return analysis;
+    }
 
 
     /**
@@ -581,7 +630,7 @@ public class TradeManager {
     }
 
 
-    public static void autoTrade(String symbol, LiveData value) {
+    public void autoTrade(String symbol, LiveData value) {
         int tendency = Analyzer.getDepthTendency(value.getDepth());
         double[] depth = Analyzer.getPriceFromDepth(value.getDepth());
         int increasePointCountByKline = Analyzer.getIncreasePointCountByKline(value.getKLineData(), 10);
@@ -593,8 +642,8 @@ public class TradeManager {
         List<Double> macds = calculator.computeMACDS();
         List<Double> deas = calculator.computeDEAS();
 
-
     }
+
 
     public enum WAREHOUSE {
         ONE_FOUR, HALF, FULL, THREE_FOUR

@@ -8,10 +8,10 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.leapord.supercoin.core.TradeManager;
 import com.leapord.supercoin.entity.http.LiveData;
 import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.CoinObserver;
+import com.leapord.supercoin.observer.LooperObserver;
 import com.leapord.supercoin.util.ToastUtis;
 import com.orhanobut.logger.Logger;
 
@@ -75,7 +75,7 @@ public class LooperService extends Service {
                                             HttpUtil.createRequest().fetchKline(symbol, KTIMES.get(1)).subscribeOn(Schedulers.io()),
                                             HttpUtil.createRequest().fetchDepth(symbol).subscribeOn(Schedulers.io()), LiveData::new)
                                             .observeOn(Schedulers.io())
-                                            .subscribe(liveData -> TradeManager.autoTrade(symbol, liveData));
+                                            .subscribe(LooperObserver.getInstance());
                                 }
                             }
                         });
