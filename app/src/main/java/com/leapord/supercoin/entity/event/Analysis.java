@@ -57,11 +57,16 @@ public class Analysis {
     private List<Double> MB; // 中轨线
     private List<Double> DN; // 下轨线
 
-    private boolean canPurchase = true;
+    private boolean canPurchase;
     private boolean canSell;
     private int sellConformNum;
+    private int purchaseConformNum;
 
     public void increaseSellConformNum() {
+        this.sellConformNum += 1;
+    }
+
+    public void increasePurchaseConformNum() {
         this.sellConformNum += 1;
     }
 

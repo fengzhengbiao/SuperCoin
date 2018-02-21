@@ -34,7 +34,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.CoinHold
 
     @Override
     public CoinHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_history, parent,false);
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_history, parent, false);
         return new CoinHolder(itemView);
     }
 
@@ -42,8 +42,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.CoinHold
     public void onBindViewHolder(CoinHolder holder, int position) {
         Trade trade = trades.get(position);
         holder.tvCoinName.setText(trade.getSymbol());
-        holder.tvStatus.setText(trade.getStatus() ? "成功" : "失败");
-        holder.tvStatus.setBackgroundColor(Color.parseColor(trade.getStatus() ? "#45b10f" : "#d72d21"));
+        holder.tvAmount.setText(trade.getAmount());
+        holder.tvPrice.setText(trade.getPrice());
+        holder.tvAmount.setBackgroundColor(Color.parseColor(trade.getStatus() ? "#45b10f" : "#d72d21"));
+        holder.tvPrice.setBackgroundColor(Color.parseColor(trade.getSellType().contains("buy") ? "#45b10f" : "#d72d21"));
         holder.tvTime.setText(TimeUtils.formatDate(trade.getCreateTime()));
     }
 
@@ -56,8 +58,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.CoinHold
 
         @BindView(R.id.tv_name)
         TextView tvCoinName;
-        @BindView(R.id.tv_status)
-        TextView tvStatus;
+        @BindView(R.id.tv_amount)
+        TextView tvAmount;
+        @BindView(R.id.tv_price)
+        TextView tvPrice;
         @BindView(R.id.tv_time)
         TextView tvTime;
 
