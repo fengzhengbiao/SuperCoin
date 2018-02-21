@@ -15,6 +15,7 @@ import java.util.List;
  **********************************************/
 
 public class BollFilter implements Filter {
+
     @Override
     public Analysis intercept(Analysis value) {
         List<double[]> subKlineData = value.getOriginData().getSubKlineData();
