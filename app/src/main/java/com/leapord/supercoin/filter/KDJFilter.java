@@ -14,7 +14,7 @@ import java.util.List;
 
 public class KDJFilter implements Filter {
     @Override
-    public Analysis intercept(Analysis value) {
+    public Analysis intercept(Analysis value, boolean isPurchaseSync, boolean isSellSync) {
         KlineCalculator calculator = new KlineCalculator(value.getOriginData().getKLineData());
         List<Double> K = calculator.computeK();
         List<Double> D = calculator.computeD();

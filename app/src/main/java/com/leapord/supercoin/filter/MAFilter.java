@@ -14,7 +14,7 @@ import java.util.List;
 
 public class MAFilter implements Filter {
     @Override
-    public Analysis intercept(Analysis value) {
+    public Analysis intercept(Analysis value, boolean isPurchaseSync, boolean isSellSync) {
         KlineCalculator calculator = new KlineCalculator(value.getOriginData().getKLineData());
         List<Double> MA5 = calculator.computeMA5();
         List<Double> MA10 = calculator.computeMA10();

@@ -11,6 +11,6 @@ import com.leapord.supercoin.entity.event.Analysis;
 
 public interface Filter {
 
-    Analysis intercept(Analysis value);
+    Analysis intercept(Analysis value,boolean isPurchaseSync,boolean isSellSync);
 
 }

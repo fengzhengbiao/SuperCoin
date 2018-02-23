@@ -63,11 +63,19 @@ public class Analysis {
     private int purchaseConformNum;
 
     public void increaseSellConformNum() {
+        if (sellConformNum == 0) {
+            canSell = true;
+        }
         this.sellConformNum += 1;
+
     }
 
     public void increasePurchaseConformNum() {
+        if (sellConformNum == 0) {
+            canPurchase = true;
+        }
         this.sellConformNum += 1;
+
     }
 
 

@@ -14,7 +14,7 @@ import java.util.List;
 
 public class RSIFilter implements Filter {
     @Override
-    public Analysis intercept(Analysis value) {
+    public Analysis intercept(Analysis value, boolean isPurchaseSync, boolean isSellSync) {
         KlineCalculator calculator = new KlineCalculator(value.getOriginData().getKLineData());
         List<Double> RSI1 = calculator.computeRSI1();
         List<Double> RSI2 = calculator.computeRSI2();

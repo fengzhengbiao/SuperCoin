@@ -13,7 +13,7 @@ import com.leapord.supercoin.entity.event.Analysis;
 public class DepthFilter implements Filter {
 
     @Override
-    public Analysis intercept(Analysis value) {
+    public Analysis intercept(Analysis value, boolean isPurchaseSync, boolean isSellSync) {
         int tendency = Analyzer.getDepthTendency(value.getOriginData().getDepth());
         value.setDepthTrend(tendency);
         value.setCanSell(tendency < 0 || value.canSell());

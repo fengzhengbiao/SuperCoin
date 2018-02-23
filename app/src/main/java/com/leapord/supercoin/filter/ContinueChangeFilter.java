@@ -18,15 +18,19 @@ public class ContinueChangeFilter implements Filter {
         this.count = count;
     }
 
+
     @Override
-    public Analysis intercept(Analysis value) {
+    public Analysis intercept(Analysis value, boolean isPurchaseSync, boolean isSellSync) {
         boolean increase = Analyzer.isContinuousIncrease(value.getOriginData().getKLineData(), count);
-        boolean decrease = Analyzer.isContinuousDecrease(value.getOriginData().getKLineData(), count);
         value.setContinueIncrease(increase);
-        value.setContinueDecrease(decrease);
-        value.setCanPurchase(increase && value.canPurchase());
-        value.setCanSell(decrease || value.canSell());
-        value.setSellConformNum(decrease ? value.getSellConformNum() + 1 : value.getSellConformNum());
+        if (increase) {
+            value.increasePurchaseConformNum();
+        } else {
+            boolean decrease = Analyzer.isContinuousDecrease(value.getOriginData().getKLineData(), count);
+            if (decrease){
+                value.increaseSellConformNum();
+            }
+        }
         return value;
     }
 }
