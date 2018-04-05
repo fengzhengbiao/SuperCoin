@@ -21,7 +21,7 @@ public class ToastUtis {
 
     public static void showToast( String msg) {
         if (sToast == null) {
-            sToast = Toast.makeText(sContext, msg, Toast.LENGTH_SHORT);
+            sToast = Toast.makeText(sContext, msg, Toast.LENGTH_LONG);
             sToast.setGravity(Gravity.CENTER, 0, 0);
         } else {
             sToast.setText(msg);
@@ -31,7 +31,7 @@ public class ToastUtis {
 
     public static void showToast( @StringRes int resId) {
         if (sToast == null) {
-            sToast = Toast.makeText(sContext, sContext.getResources().getString(resId), Toast.LENGTH_SHORT);
+            sToast = Toast.makeText(sContext, sContext.getResources().getString(resId), Toast.LENGTH_LONG);
             sToast.setGravity(Gravity.CENTER, 0, 0);
         } else {
             sToast.setText(sContext.getResources().getString(resId));

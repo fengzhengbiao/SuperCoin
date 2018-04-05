@@ -1,5 +1,6 @@
 package com.leapord.supercoin.entity.http;
 
+import java.io.Serializable;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -15,8 +16,13 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LiveData {
+public class LiveData implements Serializable {
     private List<double[]> kLineData;
     private List<double[]> subKlineData;
     private Depth depth;
+
+    public LiveData(List<double[]> kLineData, Depth depth) {
+        this.kLineData = kLineData;
+        this.depth = depth;
+    }
 }

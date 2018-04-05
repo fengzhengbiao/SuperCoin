@@ -75,7 +75,7 @@ public class LooperService extends Service {
                                             HttpUtil.createRequest().fetchKline(symbol, KTIMES.get(1)).subscribeOn(Schedulers.io()),
                                             HttpUtil.createRequest().fetchDepth(symbol).subscribeOn(Schedulers.io()), LiveData::new)
                                             .observeOn(Schedulers.io())
-                                            .subscribe(LooperObserver.getInstance());
+                                            .subscribe(LooperObserver.get(symbol));
                                 }
                             }
                         });

@@ -83,11 +83,34 @@ public class Analyzer {
      * 根据买卖盘获取最新市价
      *
      * @param depth
-     * @return
+     * @return [卖一价，买一价]
      */
     public static double[] getPriceFromDepth(Depth depth) {
         List<double[]> asks = depth.getAsks();
         return new double[]{asks.get(asks.size() - 1)[0], depth.getBids().get(0)[0]};
+    }
+
+    /**
+     * 获取最低买入价格和最高买入数量
+     *
+     * @param depth
+     * @return [价格，数量]
+     */
+    public static double[] getMinBuyDepth(Depth depth) {
+        List<double[]> asks = depth.getAsks();
+        return asks.get(asks.size() - 1);
+    }
+
+
+    /**
+     * 获取最高卖出价格和最高卖出数量
+     *
+     * @param depth
+     * @return [价格，数量]
+     */
+    public static double[] getMaxSellDepth(Depth depth) {
+        List<double[]> asks = depth.getAsks();
+        return asks.get(0);
     }
 
     /**
@@ -166,6 +189,21 @@ public class Analyzer {
 
         return new double[]{tendncy, kStart, kEnd, kFull};
     }
+
+
+    public static double[] calcLineRatio(List<Double> lineData, int sampSize) {
+        int startIndex = lineData.size() - 1 - sampSize;
+        WeightedObservedPoints fullPoints = new WeightedObservedPoints();
+        // 将x-y数据元素调用points.add(x[i], y[i])加入到观察点序列中
+        for (int i = startIndex; i < lineData.size(); i++) {
+            fullPoints.add(i, lineData.get(i));
+        }
+        // degree 指定多项式阶数
+        PolynomialCurveFitter fitter = PolynomialCurveFitter.create(1);
+        // 曲线拟合，结果保存于双精度数组中，由常数项至最高次幂系数排列
+        return fitter.fit(fullPoints.toList());
+    }
+
 
     /**
      * @param kNums k线数据
@@ -309,5 +347,66 @@ public class Analyzer {
         return 0L;
     }
 
+    /**
+     * 判断KDJ末尾处是否有交点
+     *
+     * @param K
+     * @param D
+     * @param J
+     * @return
+     */
+    public static boolean hasCrossAtEnd(List<Double> K, List<Double> D, List<Double> J) {
+        int endIndex = K.size();
+        for (int i = endIndex; i >= endIndex - 2; i--) {
+            if (K.get(i) == D.get(i) && D.get(i) == J.get(i)) {
+                return true;
+            }
+        }
+        if (J.get(endIndex) > K.get(endIndex) && K.get(endIndex) > D.get(endIndex)) {    //上涨
+            if (J.get(endIndex - 1) < K.get(endIndex - 1) && K.get(endIndex - 1) < D.get(endIndex - 1)) {
+                return true;
+            }
+        }
+        if (J.get(endIndex) < K.get(endIndex) && K.get(endIndex) < D.get(endIndex)) {    //下跌
+            if (J.get(endIndex - 1) > K.get(endIndex - 1) && K.get(endIndex - 1) > D.get(endIndex - 1)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 是否穿过0点
+     *
+     * @param macd
+     * @param balance 稳定点个数
+     * @return
+     */
+    public static boolean hasCrossZero(List<Double> macd, int balance) {
+        int endIndex = macd.size();
+        if (macd.get(endIndex) >= 0) {
+            for (int i = endIndex - 1 - balance; i <= endIndex - 1; i++) {
+                if (macd.get(i) > 0) {
+                    return false;
+                }
+            }
+            Log.i(TAG, "hasCrossZero: 买入最佳点");
+            return true;
+        }
+        if (macd.get(endIndex) < 0) {
+            for (int i = endIndex - 1 - balance; i <= endIndex - 1; i++) {
+                if (macd.get(i) < 0) {
+                    return false;
+                }
+            }
+            Log.i(TAG, "hasCrossZero: 卖出最佳点");
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isMiddle(double value) {
+        return value > 20 && value < 80;
+    }
 
 }
