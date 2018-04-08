@@ -32,6 +32,7 @@
         
         <service android:name=".service.LooperService"/>
         <service android:name=".service.BuyService"/>
+        <service android:name=".service.SellService"/>
         <service
             android:name=".service.KeepAliveService"
             android:enabled="true"

@@ -383,7 +383,7 @@ public class Analyzer {
      * @return
      */
     public static boolean hasCrossZero(List<Double> macd, int balance) {
-        int endIndex = macd.size();
+        int endIndex = macd.size()-1;
         if (macd.get(endIndex) >= 0) {
             for (int i = endIndex - 1 - balance; i <= endIndex - 1; i++) {
                 if (macd.get(i) > 0) {
