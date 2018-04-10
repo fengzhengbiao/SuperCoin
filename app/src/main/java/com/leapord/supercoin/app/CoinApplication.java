@@ -68,9 +68,12 @@ public class CoinApplication extends Application {
     public DaoSession getDaoSession() {
         return mDaoSession;
     }
+
     public SQLiteDatabase getDb() {
         return db;
     }
+
+
 
 
 

@@ -20,19 +20,25 @@ public class BuyService extends TradeService {
 
     @Override
     protected void onDataRefresh(List<double[]> value, String symbol) {
-        boolean hasCross = calcCross(value);
-        if (hasCross) {
+        boolean isKDJPosivive = calcCross(value) || TENDENCY > 0;
+        if (isKDJPosivive) {
             Log.i(TAG, "KDJ cross at end");
+        } else {
+            Log.i(TAG, "KDJ not cross at end");
         }
         long lastSellTime = SpUtils.getLong(symbol + OkCoin.Trade.BUY_MARKET, 0l);
         boolean range = lastSellTime - System.currentTimeMillis() < timeDiff;
         if (range) {
             Log.i(TAG, "last sell time in range");
+        } else {
+            Log.i(TAG, "last sell time out of range");
         }
-        if (range && hasCross) {
+        if (range && isKDJPosivive) {
             TradeManager.purchase(symbol);
             mDisposiable.dispose();
             stopSelf();
+        } else {
+            Log.i(TAG, "onDataRefresh: no operation");
         }
     }
 }

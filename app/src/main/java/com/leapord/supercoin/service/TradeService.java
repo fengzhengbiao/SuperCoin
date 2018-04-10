@@ -43,12 +43,6 @@ public abstract class TradeService extends Service {
         return null;
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        findBestTime();
-    }
-
 
     /**
      * 寻找最佳交易点
@@ -78,6 +72,11 @@ public abstract class TradeService extends Service {
                 });
     }
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+    }
+
     protected abstract void onDataRefresh(List<double[]> value, String symbol);
 
     /**
@@ -85,20 +84,30 @@ public abstract class TradeService extends Service {
      *
      * @param value
      */
+    public int TENDENCY = 0;
+
     public boolean calcCross(List<double[]> value) {
         KlineCalculator calculator = new KlineCalculator(value);
         List<Double> K = calculator.computeK();
         List<Double> D = calculator.computeD();
         List<Double> J = calculator.computeJ();
+        TENDENCY = Analyzer.getTendency(K, D, J);
         return Analyzer.hasCrossAtEnd(K, D, J);
     }
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "开始寻找最佳买入点");
-        if (intent == null) {
+        proccessIntent(intent);
+        return START_STICKY;
+    }
+
+    private void proccessIntent(Intent intent) {
+        if (intent != null) {
             symbol = intent.getStringExtra("symbol");
             String ktimeStr = SpUtils.getString(Const.SELECTED_KTIME, "");
+            Log.i(TAG, "onStartCommand: symbol:" + symbol + "  ktime:" + ktimeStr);
             if (!TextUtils.isEmpty(ktimeStr)) {
                 ArrayList<String> ktimes = (ArrayList<String>) JSON.parseArray(ktimeStr, String.class);
                 ktime = ktimes.get(0);
@@ -132,11 +141,13 @@ public abstract class TradeService extends Service {
                         break;
                 }
             }
-            if (mDisposiable == null || !mDisposiable.isDisposed()) {
-                findBestTime();
+            if (mDisposiable != null && !mDisposiable.isDisposed()) {
+                mDisposiable.dispose();
             }
+            findBestTime();
+        } else {
+            Log.i(TAG, "proccessIntent: intent = null");
         }
-        return START_STICKY;
     }
 
     @Override

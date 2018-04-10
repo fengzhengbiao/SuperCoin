@@ -5,6 +5,7 @@ import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckBox;
@@ -15,8 +16,10 @@ import com.alibaba.fastjson.JSON;
 import com.leapord.supercoin.R;
 import com.leapord.supercoin.app.Const;
 import com.leapord.supercoin.core.TradeManager;
+import com.leapord.supercoin.service.BuyService;
 import com.leapord.supercoin.service.KeepAliveService;
 import com.leapord.supercoin.service.LooperService;
+import com.leapord.supercoin.service.SellService;
 import com.leapord.supercoin.util.CommonUtil;
 import com.leapord.supercoin.util.SpUtils;
 import com.leapord.supercoin.util.ToastUtis;
@@ -230,46 +233,8 @@ public class ActionFragment extends BaseFragment {
     public void startLooper() {
         Intent intent = new Intent(getContext(), LooperService.class);
         //币种类
-        ArrayList<String> symbols = new ArrayList<>();
-        String coinZone;
-        switch (rgTradeZone.getCheckedRadioButtonId()) {
-            case R.id.rb_btc:
-                coinZone = "_btc";
-                break;
-            case R.id.rb_eth:
-                coinZone = "_eth";
-                break;
-            case R.id.rb_bch:
-                coinZone = "_bch";
-                break;
-            default:
-                coinZone = "_usdt";
-                break;
-        }
-        if (cbOf.isChecked()) {
-            symbols.add(cbOf.getText().toString().toLowerCase() + coinZone);
-        }
-        if (cbLight.isChecked()) {
-            symbols.add(cbLight.getText().toString().toLowerCase() + coinZone);
-        }
-        if (cbSwftc.isChecked()) {
-            symbols.add(cbSwftc.getText().toString().toLowerCase() + coinZone);
-        }
-        if (cbShow.isChecked()) {
-            symbols.add(cbShow.getText().toString().toLowerCase() + coinZone);
-        }
-        if (cbBtc.isChecked()) {
-            symbols.add(cbBtc.getText().toString().toLowerCase() + coinZone);
-        }
-        if (cbEtc.isChecked()) {
-            symbols.add(cbEtc.getText().toString().toLowerCase() + coinZone);
-        }
-        if (cbEos.isChecked()) {
-            symbols.add(cbEos.getText().toString().toLowerCase() + coinZone);
-        }
-        if (cbEth.isChecked()) {
-            symbols.add(cbEth.getText().toString().toLowerCase() + coinZone);
-        }
+        String coinZone = getCoinZone();
+        ArrayList<String> symbols = getCoinFullNames(coinZone);
         if (symbols.size() == 0) {
             ToastUtis.showToast("请选择币种");
             return;
@@ -313,7 +278,6 @@ public class ActionFragment extends BaseFragment {
         String period = ((RadioButton) findViewById(checkedRadioButtonId)).getText().toString().toLowerCase();
         intent.putExtra("PERIOD", period);
         SpUtils.putString(Const.SELECTED_PERIOD, period);
-
         SpUtils.putBoolean(Const.AUTO_TRANSACTION, checkbox.isChecked());
         getActivity().startService(intent);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -326,8 +290,58 @@ public class ActionFragment extends BaseFragment {
         }
     }
 
+    @NonNull
+    private ArrayList<String> getCoinFullNames(String coinZone) {
+        ArrayList<String> symbols = new ArrayList<>();
+        if (cbOf.isChecked()) {
+            symbols.add(cbOf.getText().toString().toLowerCase() + coinZone);
+        }
+        if (cbLight.isChecked()) {
+            symbols.add(cbLight.getText().toString().toLowerCase() + coinZone);
+        }
+        if (cbSwftc.isChecked()) {
+            symbols.add(cbSwftc.getText().toString().toLowerCase() + coinZone);
+        }
+        if (cbShow.isChecked()) {
+            symbols.add(cbShow.getText().toString().toLowerCase() + coinZone);
+        }
+        if (cbBtc.isChecked()) {
+            symbols.add(cbBtc.getText().toString().toLowerCase() + coinZone);
+        }
+        if (cbEtc.isChecked()) {
+            symbols.add(cbEtc.getText().toString().toLowerCase() + coinZone);
+        }
+        if (cbEos.isChecked()) {
+            symbols.add(cbEos.getText().toString().toLowerCase() + coinZone);
+        }
+        if (cbEth.isChecked()) {
+            symbols.add(cbEth.getText().toString().toLowerCase() + coinZone);
+        }
+        return symbols;
+    }
 
-    @OnClick({R.id.btn_start, R.id.btn_stop, R.id.btn_buy, R.id.btn_sell, R.id.btn_isrunning})
+    @NonNull
+    private String getCoinZone() {
+        String coinZone;
+        switch (rgTradeZone.getCheckedRadioButtonId()) {
+            case R.id.rb_btc:
+                coinZone = "_btc";
+                break;
+            case R.id.rb_eth:
+                coinZone = "_eth";
+                break;
+            case R.id.rb_bch:
+                coinZone = "_bch";
+                break;
+            default:
+                coinZone = "_usdt";
+                break;
+        }
+        return coinZone;
+    }
+
+
+    @OnClick({R.id.btn_start, R.id.btn_stop, R.id.btn_cancle_all, R.id.btn_buy, R.id.btn_sell, R.id.btn_isrunning})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_start:
@@ -337,10 +351,49 @@ public class ActionFragment extends BaseFragment {
                 stopLooper();
                 break;
             case R.id.btn_buy:
-//                TradeManager.purchase(SpUtils.getString(Const.SELECTED_SYMBOL, OkCoin.USDT.OF), TradeManager.WAREHOUSE.FULL);
+                String coinZone = getCoinZone();
+                if (TextUtils.isEmpty(coinZone)) {
+                    ToastUtis.showToast("please choose coin zone");
+                    return;
+                }
+                ArrayList<String> coinNames = getCoinFullNames(coinZone);
+                if (coinNames.size() > 0) {
+                    for (String symbol : coinNames) {
+                        TradeManager.purchase(symbol);
+                    }
+                } else {
+                    ToastUtis.showToast("please choose coin");
+                }
+
                 break;
             case R.id.btn_sell:
-//                TradeManager.sellCoins(SpUtils.getString(Const.SELECTED_SYMBOL, OkCoin.USDT.OF), TradeManager.WAREHOUSE.FULL);
+                String coinZone1 = getCoinZone();
+                if (TextUtils.isEmpty(coinZone1)) {
+                    ToastUtis.showToast("please choose coin zone");
+                    return;
+                }
+                ArrayList<String> coinNames1 = getCoinFullNames(coinZone1);
+                if (coinNames1.size() > 0) {
+                    for (String symbol : coinNames1) {
+                        TradeManager.cancelAllTrade(symbol);
+                        TradeManager.sellCoins(symbol);
+                    }
+                } else {
+                    ToastUtis.showToast("please choose coin");
+                }
+                break;
+            case R.id.btn_cancle_all:
+                Intent buyIntent = new Intent(getContext(), BuyService.class);
+                getContext().stopService(buyIntent);
+                Intent sellIntent = new Intent(getContext(), SellService.class);
+                getContext().stopService(sellIntent);
+                String coins = SpUtils.getString(Const.SELECTED_SYMBOL, "");
+                if (!TextUtils.isEmpty(coins)) {
+                    List<String> symbols = JSON.parseArray(coins, String.class);
+                    for (String symbol : symbols) {
+                        TradeManager.cancelAllTrade(symbol);
+                    }
+                }
                 break;
             case R.id.btn_isrunning:
                 ToastUtis.showToast(CommonUtil.isServiceWork(getContext(), LooperService.class.getName()) ? "正在运行" : "已停止");

@@ -356,7 +356,7 @@ public class Analyzer {
      * @return
      */
     public static boolean hasCrossAtEnd(List<Double> K, List<Double> D, List<Double> J) {
-        int endIndex = K.size();
+        int endIndex = K.size() - 1;
         for (int i = endIndex; i >= endIndex - 2; i--) {
             if (K.get(i) == D.get(i) && D.get(i) == J.get(i)) {
                 return true;
@@ -375,6 +375,26 @@ public class Analyzer {
         return false;
     }
 
+
+    /**
+     * 获取当前趋势
+     *
+     * @param K
+     * @param D
+     * @param J
+     * @return
+     */
+    public static int getTendency(List<Double> K, List<Double> D, List<Double> J) {
+        int endIndex = K.size() - 1;
+        if (J.get(endIndex) > K.get(endIndex) && K.get(endIndex) > D.get(endIndex)) {    //上涨
+            return 1;
+        }
+        if (J.get(endIndex) < K.get(endIndex) && K.get(endIndex) < D.get(endIndex)) {    //下跌
+            return -1;
+        }
+        return 0;
+    }
+
     /**
      * 是否穿过0点
      *
@@ -383,7 +403,7 @@ public class Analyzer {
      * @return
      */
     public static boolean hasCrossZero(List<Double> macd, int balance) {
-        int endIndex = macd.size()-1;
+        int endIndex = macd.size() - 1;
         if (macd.get(endIndex) >= 0) {
             for (int i = endIndex - 1 - balance; i <= endIndex - 1; i++) {
                 if (macd.get(i) > 0) {
