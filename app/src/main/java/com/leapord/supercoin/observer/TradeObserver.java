@@ -18,6 +18,7 @@ import com.leapord.supercoin.util.ToastUtis;
 public class TradeObserver extends CoinObserver<Trade> {
     @Override
     public void onNext(Trade trade) {
+        Log.e("CoinProcess", ">>>   ******   -----   make one trade, type : " + trade.getSellType() + "  -----  *****    >>>");
         TradeDao tradeDao = CoinApplication.INSTANCE.getDaoSession().getTradeDao();
         tradeDao.save(trade);
     }

@@ -106,7 +106,7 @@ public class TradeManager {
             trade.setAmount(String.valueOf(oderTransform.getEvent().getAmount()));
             trade.setPrice(String.valueOf(oderTransform.getEvent().getPrice()));
             trade.setOrderId(oderTransform.getResponse().getOrder_id());
-            trade.setSellType(OkCoin.Trade.BUY_MARKET);
+            trade.setSellType(OkCoin.Trade.BUY);
             trade.setStatus(oderTransform.getResponse().isResult());
             return trade;
         }).subscribeOn(Schedulers.io())

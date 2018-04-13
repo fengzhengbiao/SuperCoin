@@ -1,6 +1,8 @@
 package com.leapord.supercoin.ui;
 
 
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
@@ -8,6 +10,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 
 import com.leapord.supercoin.R;
+import com.leapord.supercoin.util.SpUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +49,14 @@ public class MainActivity extends AppCompatActivity {
         fragmentManager.beginTransaction()
                 .replace(R.id.container, fragmentList.get(0))
                 .commitAllowingStateLoss();
+
+        if (Build.MANUFACTURER.equalsIgnoreCase("Xiaomi") && !SpUtils.getBoolean("isAlive", false)) {
+            Intent intent = new Intent();
+            intent.setAction("miui.intent.action.OP_AUTO_START");
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            startActivity(intent);
+            SpUtils.putBoolean("isAlive", true);
+        }
 
     }
 

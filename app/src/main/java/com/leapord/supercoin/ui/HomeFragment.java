@@ -3,6 +3,7 @@ package com.leapord.supercoin.ui;
 import android.view.View;
 
 import com.leapord.supercoin.R;
+import com.leapord.supercoin.util.ToastUtis;
 
 /*********************************************
  *  Author  JokerFish 
@@ -22,6 +23,10 @@ public class HomeFragment extends BaseFragment {
     protected void init(View rootView) {
         super.init(rootView);
 
+    }
+
+    public void onViewClick(View view){
+        ToastUtis.showToast("未实现");
     }
 
 

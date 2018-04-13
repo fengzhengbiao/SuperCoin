@@ -23,4 +23,11 @@ public interface Const {
 
     String SELECTED_PERIOD = "user_selected_period";
 
+
+    String BUY_SERVICESTART_TIME = "buy_servicestart_time";
+
+    String SELL_SERVICESTART_TIME = "sell_servicestart_time";
+
+
+
 }

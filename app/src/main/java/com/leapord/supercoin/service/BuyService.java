@@ -2,6 +2,7 @@ package com.leapord.supercoin.service;
 
 import android.util.Log;
 
+import com.leapord.supercoin.app.Const;
 import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.core.TradeManager;
 import com.leapord.supercoin.util.SpUtils;
@@ -16,29 +17,35 @@ import java.util.List;
  */
 public class BuyService extends TradeService {
 
-    private static final String TAG = "BUY_SERVICE";
+    private static final String TAG = "CoinProcess";
 
     @Override
     protected void onDataRefresh(List<double[]> value, String symbol) {
         boolean isKDJPosivive = calcCross(value) || TENDENCY > 0;
         if (isKDJPosivive) {
-            Log.i(TAG, "KDJ cross at end");
+            Log.i(TAG, "<<<------ KDJ cross at end ------- <<<");
         } else {
-            Log.i(TAG, "KDJ not cross at end");
+            Log.i(TAG, "<<<------ KDJ not cross at end ------- <<<");
         }
         long lastSellTime = SpUtils.getLong(symbol + OkCoin.Trade.BUY_MARKET, 0l);
         boolean range = lastSellTime - System.currentTimeMillis() < timeDiff;
         if (range) {
-            Log.i(TAG, "last sell time in range");
+            Log.i(TAG, "<<<------ last sell time in range ------- <<<");
         } else {
-            Log.i(TAG, "last sell time out of range");
+            Log.i(TAG, "<<<------ last sell time out of range ------- <<<");
         }
         if (range && isKDJPosivive) {
             TradeManager.purchase(symbol);
             mDisposiable.dispose();
             stopSelf();
         } else {
-            Log.i(TAG, "onDataRefresh: no operation");
+            if (System.currentTimeMillis() - SpUtils.getLong(Const.BUY_SERVICESTART_TIME, 0l) > OkCoin.ONE_PERIOD) {
+                Log.i(TAG, "------ unreach price,buy failed stop self ------- ");
+                stopSelf();
+            } else {
+                Log.i(TAG, "------ buy service, onDataRefresh: no operation ------- ");
+            }
         }
+
     }
 }
