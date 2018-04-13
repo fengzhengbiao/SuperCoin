@@ -5,6 +5,7 @@ import android.util.Log;
 import com.leapord.supercoin.app.CoinApplication;
 import com.leapord.supercoin.entity.dao.Trade;
 import com.leapord.supercoin.entity.dao.TradeDao;
+import com.leapord.supercoin.util.TimeUtils;
 import com.leapord.supercoin.util.ToastUtis;
 
 
@@ -18,7 +19,7 @@ import com.leapord.supercoin.util.ToastUtis;
 public class TradeObserver extends CoinObserver<Trade> {
     @Override
     public void onNext(Trade trade) {
-        Log.e("CoinProcess", ">>>   ******   -----   make one trade, type : " + trade.getSellType() + "  -----  *****    >>>");
+        Log.e("CoinProcess", ">>>   ******   -----   make one trade, type : " + trade.getSellType() + "  time：" + TimeUtils.getCurrentTime() + "-----  *****    >>>");
         TradeDao tradeDao = CoinApplication.INSTANCE.getDaoSession().getTradeDao();
         tradeDao.save(trade);
     }
