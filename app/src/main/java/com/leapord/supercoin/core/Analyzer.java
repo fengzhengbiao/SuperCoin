@@ -109,8 +109,8 @@ public class Analyzer {
      * @return [价格，数量]
      */
     public static double[] getMaxSellDepth(Depth depth) {
-        List<double[]> asks = depth.getAsks();
-        return asks.get(0);
+        List<double[]> bids = depth.getBids();
+        return bids.get(0);
     }
 
     /**
