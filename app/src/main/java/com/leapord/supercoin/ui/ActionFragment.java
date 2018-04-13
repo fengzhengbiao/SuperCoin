@@ -68,6 +68,8 @@ public class ActionFragment extends BaseFragment {
     CheckBox cbEtc;
     @BindView(R.id.cb_eos)
     CheckBox cbEos;
+    @BindView(R.id.cb_1min)
+    CheckBox cb1min;
     @BindView(R.id.cb_3min)
     CheckBox cb3min;
     @BindView(R.id.cb_5min)
@@ -135,19 +137,19 @@ public class ActionFragment extends BaseFragment {
 
         String period = SpUtils.getString(Const.SELECTED_PERIOD, "");
         switch (period) {
-            case "3":
+            case "30":
                 rb3.setChecked(true);
                 break;
-            case "5":
+            case "60":
                 rb5.setChecked(true);
                 break;
-            case "15":
+            case "180":
                 rb15.setChecked(true);
                 break;
-            case "30":
+            case "500":
                 rb30.setChecked(true);
                 break;
-            case "60":
+            case "800":
                 rb60.setChecked(true);
                 break;
 
@@ -157,6 +159,8 @@ public class ActionFragment extends BaseFragment {
 
     private void setKTime(String ktime) {
         switch (ktime) {
+            case "1min":
+                cb1min.setChecked(true);
             case "3min":
                 cb3min.setChecked(true);
                 break;
@@ -243,6 +247,9 @@ public class ActionFragment extends BaseFragment {
         SpUtils.putString(Const.SELECTED_SYMBOL, JSON.toJSONString(symbols));
 
         ArrayList<String> kTimes = new ArrayList<>();
+        if (cb1min.isChecked()) {
+            kTimes.add(cb1min.getText().toString().toLowerCase());
+        }
         if (cb3min.isChecked()) {
             kTimes.add(cb3min.getText().toString().toLowerCase());
         }

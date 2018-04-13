@@ -168,6 +168,13 @@
                 android:orientation="horizontal">
 
                 <CheckBox
+                    android:id="@+id/cb_1min"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="1min" />
+
+                <CheckBox
                     android:id="@+id/cb_3min"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -188,18 +195,20 @@
                     android:layout_weight="1"
                     android:text="15min" />
 
-                <CheckBox
-                    android:id="@+id/cb_30min"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="30min" />
+
             </TableRow>
 
             <TableRow
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/cb_30min"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="30min" />
 
                 <CheckBox
                     android:id="@+id/cb_1hour"
@@ -227,7 +236,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="6hour" />
+                    android:text="6hour"
+                    android:visibility="gone" />
             </TableRow>
 
         </TableLayout>
@@ -237,7 +247,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:gravity="center"
-            android:text="查询间隔(min)"
+            android:text="查询间隔(seconds)"
             android:textColor="@color/colorPrimary"
             android:textSize="15sp" />
 
@@ -254,7 +264,7 @@
                 android:layout_height="40dp"
                 android:layout_weight="1"
                 android:checked="true"
-                android:text="3"
+                android:text="30"
                 android:textSize="12sp" />
 
             <RadioButton
@@ -262,7 +272,7 @@
                 android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
-                android:text="5"
+                android:text="60"
                 android:textSize="12sp" />
 
             <RadioButton
@@ -270,7 +280,7 @@
                 android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
-                android:text="15"
+                android:text="180"
                 android:textSize="12sp" />
 
             <RadioButton
@@ -278,7 +288,7 @@
                 android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
-                android:text="30"
+                android:text="500"
                 android:textSize="12sp" />
 
             <RadioButton
@@ -286,7 +296,7 @@
                 android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
-                android:text="60"
+                android:text="800"
                 android:textSize="12sp" />
         </RadioGroup>
 

@@ -6,6 +6,7 @@ import com.leapord.supercoin.app.Const;
 import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.core.TradeManager;
 import com.leapord.supercoin.util.SpUtils;
+import com.leapord.supercoin.util.TimeUtils;
 
 import java.util.List;
 
@@ -40,10 +41,10 @@ public class BuyService extends TradeService {
             stopSelf();
         } else {
             if (System.currentTimeMillis() - SpUtils.getLong(Const.BUY_SERVICESTART_TIME, 0l) > OkCoin.ONE_PERIOD) {
-                Log.i(TAG, "------ unreach price,buy failed stop self ------- ");
+                Log.i(TAG, "------ unreach price,buy failed stop self at:" + TimeUtils.getCurrentTime() + "  ------- ");
                 stopSelf();
             } else {
-                Log.i(TAG, "------ buy service, onDataRefresh: no operation ------- ");
+                Log.i(TAG, "------ buy service, onDataRefresh: no operation at:" + TimeUtils.getCurrentTime() + "  ------- ");
             }
         }
 

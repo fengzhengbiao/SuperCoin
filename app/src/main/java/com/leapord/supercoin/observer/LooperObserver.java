@@ -80,7 +80,11 @@ public class LooperObserver extends CoinObserver<LiveData> {
                 Log.i(TAG, "------ looper observer rsi out of range ris1:" + rsi1.get(rsi1.size() - 1) + "------- ");
             }
         } else {
-            Log.i(TAG, "------ looper observer macd no cross ------- ");
+            if (Analyzer.isContinuousDecrease(value.getKLineData(), 4)) {
+                Log.i(TAG, "  <<<------ looper observer macd continue decrease at: " + TimeUtils.getCurrentTime() + "  -------<<< ");
+                startOptimalService(false);
+            }
+            Log.i(TAG, "  ------ looper observer macd no cross at: " + TimeUtils.getCurrentTime() + "  ------- ");
         }
     }
 
@@ -95,11 +99,11 @@ public class LooperObserver extends CoinObserver<LiveData> {
             sellIntent.putExtra("symbol", symbol);
             if (in) {
                 SpUtils.putLong(Const.BUY_SERVICESTART_TIME, System.currentTimeMillis());
-                Log.i(TAG, "<<<------ buy service start at： " + TimeUtils.formatDate(System.currentTimeMillis()) + "------- <<<");
+                Log.i(TAG, "<<<------ buy service start at： " + TimeUtils.getCurrentTime() + "  ------- <<<");
                 CoinApplication.INSTANCE.startService(buyIntent);
                 CoinApplication.INSTANCE.stopService(sellIntent);
             } else {
-                Log.i(TAG, ">>>------ sell service start at： " + TimeUtils.formatDate(System.currentTimeMillis()) + "------- >>>");
+                Log.i(TAG, ">>>------ sell service start at： " + TimeUtils.getCurrentTime() + "  ------- >>>");
                 SpUtils.putLong(Const.SELL_SERVICESTART_TIME, System.currentTimeMillis());
                 CoinApplication.INSTANCE.startService(sellIntent);
                 CoinApplication.INSTANCE.stopService(buyIntent);

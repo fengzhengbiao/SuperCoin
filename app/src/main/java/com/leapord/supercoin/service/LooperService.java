@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.leapord.supercoin.R;
 import com.leapord.supercoin.entity.http.LiveData;
 import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.CoinObserver;
@@ -59,7 +60,7 @@ public class LooperService extends Service {
                 Logger.d(SYMBOLS);
                 Logger.d(KTIMES);
                 Logger.d(PERIOD);
-                Observable.interval(0, PERIOD, TimeUnit.SECONDS)
+                Observable.interval(0, PERIOD , TimeUnit.SECONDS)
                         .subscribeOn(Schedulers.io())
                         .subscribe(new CoinObserver<Long>() {
                             @Override
@@ -97,7 +98,14 @@ public class LooperService extends Service {
             }
             startLoop();
         }
-        startForeground(5, new Notification());
+
+        Notification.Builder builder = new Notification.Builder(this);
+        builder.setSmallIcon(R.mipmap.ic_launcher)
+                //设置通知标题
+                .setContentTitle("SuperCoin")
+                //设置通知内容
+                .setContentText("is running");
+        startForeground(5, builder.build());
         return START_STICKY;
     }
 

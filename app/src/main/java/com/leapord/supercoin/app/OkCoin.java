@@ -29,11 +29,11 @@ public interface OkCoin {
 
 
     interface API {
-        String API_KEY = "2c31b63a-9d64-4889-935c-25f319102832";
-//        String API_KEY = "7752d9e0-d261-491a-8460-49920a13f0ab";
-
-        String SECRET_KEY = "241CFFFF941F14A3320DC5F9AC349955";
-//        String SECRET_KEY = "625133937D92A58E9F04BB784A51BC35";
+//        String API_KEY = "2c31b63a-9d64-4889-935c-25f319102832";
+        String API_KEY = "7752d9e0-d261-491a-8460-49920a13f0ab";
+//
+//        String SECRET_KEY = "241CFFFF941F14A3320DC5F9AC349955";
+        String SECRET_KEY = "625133937D92A58E9F04BB784A51BC35";
     }
 
      long ONE_PERIOD = 5 * 60 * 1000;
