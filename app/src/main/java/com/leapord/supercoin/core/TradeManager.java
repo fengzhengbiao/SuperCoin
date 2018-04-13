@@ -62,11 +62,12 @@ public class TradeManager {
             double canBuyCount = legaloinAmount / minBuyDepth[0];
             double amount = Math.min(canBuyCount, minBuyDepth[1]);
             return Observable.zip(Observable.just(new OrderEvent(amount, minBuyDepth[0])),
-                    HttpUtil.createRequest().purchaseMarket(amount, symbol, OkCoin.Trade.BUY),
+                    HttpUtil.createRequest().makeTrade(amount, minBuyDepth[0], symbol, OkCoin.Trade.BUY),
                     OrderTransform::new);
         }).map(oderTransform -> {
                     Trade trade = new Trade();
                     trade.setSymbol(symbol);
+                    Log.e("CoinProcess", "purchase: amount:" + oderTransform.getEvent().getAmount() + " price:" + oderTransform.getEvent().getPrice());
                     trade.setAmount(String.valueOf(oderTransform.getEvent().getAmount()));
                     trade.setPrice(String.valueOf(oderTransform.getEvent().getPrice()));
                     trade.setOrderId(oderTransform.getResponse().getOrder_id());
@@ -83,7 +84,7 @@ public class TradeManager {
 
 
     /**
-     * 买入
+     * 卖出
      */
     public static void sellCoins(String symbol) {
         Observable.zip(HttpUtil.createRequest().fetchUserInfo(),
@@ -99,7 +100,7 @@ public class TradeManager {
                     double[] maxSellDepth = Analyzer.getMaxSellDepth(userWithDepth.getDepth());
                     double amount = Math.min(canSellAmount, maxSellDepth[1]);
                     return Observable.zip(Observable.just(new OrderEvent(amount, maxSellDepth[0])), HttpUtil.createRequest()
-                            .sellMarket(amount, symbol, OkCoin.Trade.SELL_MARKET), OrderTransform::new);
+                            .makeTrade(amount, maxSellDepth[0], symbol, OkCoin.Trade.SELL), OrderTransform::new);
                 }).map(oderTransform -> {
             Trade trade = new Trade();
             trade.setSymbol(symbol);
@@ -108,6 +109,7 @@ public class TradeManager {
             trade.setOrderId(oderTransform.getResponse().getOrder_id());
             trade.setSellType(OkCoin.Trade.SELL);
             trade.setStatus(oderTransform.getResponse().isResult());
+            Log.e("CoinProcess", "sell: amount:" + oderTransform.getEvent().getAmount() + " price:" + oderTransform.getEvent().getPrice());
             return trade;
         }).subscribeOn(Schedulers.io())
                 .subscribe(new TradeObserver());
