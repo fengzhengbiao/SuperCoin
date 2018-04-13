@@ -25,7 +25,7 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-        Observable.timer(5, TimeUnit.SECONDS, Schedulers.io())
+        Observable.timer(3, TimeUnit.SECONDS, Schedulers.io())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(aLong -> {
                     startActivity(new Intent(SplashActivity.this, MainActivity.class));

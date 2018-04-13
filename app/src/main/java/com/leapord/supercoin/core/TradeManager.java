@@ -62,7 +62,7 @@ public class TradeManager {
             double canBuyCount = legaloinAmount / minBuyDepth[0];
             double amount = Math.min(canBuyCount, minBuyDepth[1]);
             return Observable.zip(Observable.just(new OrderEvent(amount, minBuyDepth[0])),
-                    HttpUtil.createRequest().makeTrade(amount, minBuyDepth[0], symbol, OkCoin.Trade.BUY),
+                    HttpUtil.createRequest().purchaseMarket(amount, symbol, OkCoin.Trade.BUY),
                     OrderTransform::new);
         }).map(oderTransform -> {
                     Trade trade = new Trade();
@@ -99,14 +99,14 @@ public class TradeManager {
                     double[] maxSellDepth = Analyzer.getMaxSellDepth(userWithDepth.getDepth());
                     double amount = Math.min(canSellAmount, maxSellDepth[1]);
                     return Observable.zip(Observable.just(new OrderEvent(amount, maxSellDepth[0])), HttpUtil.createRequest()
-                            .makeTrade(amount, maxSellDepth[0], symbol, OkCoin.Trade.SELL), OrderTransform::new);
+                            .sellMarket(amount, symbol, OkCoin.Trade.SELL_MARKET), OrderTransform::new);
                 }).map(oderTransform -> {
             Trade trade = new Trade();
             trade.setSymbol(symbol);
             trade.setAmount(String.valueOf(oderTransform.getEvent().getAmount()));
             trade.setPrice(String.valueOf(oderTransform.getEvent().getPrice()));
             trade.setOrderId(oderTransform.getResponse().getOrder_id());
-            trade.setSellType(OkCoin.Trade.BUY);
+            trade.setSellType(OkCoin.Trade.SELL);
             trade.setStatus(oderTransform.getResponse().isResult());
             return trade;
         }).subscribeOn(Schedulers.io())
