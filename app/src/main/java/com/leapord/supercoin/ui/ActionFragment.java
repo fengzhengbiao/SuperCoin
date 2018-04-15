@@ -372,6 +372,7 @@ public class ActionFragment extends BaseFragment {
                     ToastUtis.showToast("please choose coin");
                 }
 
+
                 break;
             case R.id.btn_sell:
                 String coinZone1 = getCoinZone();

@@ -14,6 +14,7 @@ import com.leapord.supercoin.entity.http.OrderTransform;
 import com.leapord.supercoin.entity.http.UserWithDepth;
 import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.TradeObserver;
+import com.leapord.supercoin.util.SpUtils;
 import com.leapord.supercoin.util.ToastUtis;
 
 import io.reactivex.Observable;
@@ -50,7 +51,7 @@ public class TradeManager {
                             } else {
                                 Log.i(TAG, "have many coins");
                             }
-                            return false;
+                            return remainCoin > MIN_COIN_AMOUNT;
                         }
                 ).flatMap(userWithDepth -> {
             //获取法币类型
@@ -58,7 +59,7 @@ public class TradeManager {
             //获取法币数量
             double legaloinAmount = Double.parseDouble(userWithDepth.getUserInfo()
                     .getInfo().getFunds().getFree().get(coin_type));
-            double[] minBuyDepth = Analyzer.getMinBuyDepth(userWithDepth.getDepth());
+            double[] minBuyDepth = Analyzer.getMaxSellDepth(userWithDepth.getDepth());
             double canBuyCount = legaloinAmount / minBuyDepth[0];
             double amount = Math.min(canBuyCount, minBuyDepth[1]);
             return Observable.zip(Observable.just(new OrderEvent(amount, minBuyDepth[0])),
@@ -67,6 +68,7 @@ public class TradeManager {
         }).map(oderTransform -> {
                     Trade trade = new Trade();
                     trade.setSymbol(symbol);
+                    SpUtils.putLong(symbol + OkCoin.Trade.BUY_MARKET, System.currentTimeMillis());
                     Log.e("CoinProcess", "purchase: amount:" + oderTransform.getEvent().getAmount() + " price:" + oderTransform.getEvent().getPrice());
                     trade.setAmount(String.valueOf(oderTransform.getEvent().getAmount()));
                     trade.setPrice(String.valueOf(oderTransform.getEvent().getPrice()));
@@ -97,7 +99,7 @@ public class TradeManager {
                     String coin_name = getCoinName(symbol);
                     double canSellAmount = Double.parseDouble(userWithDepth.getUserInfo()
                             .getInfo().getFunds().getFree().get(coin_name));
-                    double[] maxSellDepth = Analyzer.getMaxSellDepth(userWithDepth.getDepth());
+                    double[] maxSellDepth = Analyzer.getMinBuyDepth(userWithDepth.getDepth());
                     double amount = Math.min(canSellAmount, maxSellDepth[1]);
                     return Observable.zip(Observable.just(new OrderEvent(amount, maxSellDepth[0])), HttpUtil.createRequest()
                             .makeTrade(amount, maxSellDepth[0], symbol, OkCoin.Trade.SELL), OrderTransform::new);

@@ -42,8 +42,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.CoinHold
     public void onBindViewHolder(CoinHolder holder, int position) {
         Trade trade = trades.get(position);
         holder.tvCoinName.setText(trade.getSymbol());
-        holder.tvAmount.setText(trade.getAmount());
-        holder.tvPrice.setText(trade.getPrice());
+        holder.tvAmount.setText(String.format("%.3f",Float.parseFloat(trade.getAmount())));
+        holder.tvPrice.setText(String.format("%.3f",Float.parseFloat(trade.getPrice())));
         holder.tvAmount.setBackgroundColor(Color.parseColor(trade.getStatus() ? "#45b10f" : "#d72d21"));
         holder.tvPrice.setBackgroundColor(Color.parseColor(trade.getSellType().contains("buy") ? "#45b10f" : "#d72d21"));
         holder.tvTime.setText(TimeUtils.formatDate(trade.getCreateTime()));

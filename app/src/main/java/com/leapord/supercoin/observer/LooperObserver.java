@@ -8,6 +8,7 @@ import com.leapord.supercoin.app.Const;
 import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.core.Analyzer;
 import com.leapord.supercoin.core.KlineCalculator;
+import com.leapord.supercoin.core.TradeManager;
 import com.leapord.supercoin.entity.http.LiveData;
 import com.leapord.supercoin.service.BuyService;
 import com.leapord.supercoin.service.SellService;
@@ -63,27 +64,33 @@ public class LooperObserver extends CoinObserver<LiveData> {
                 Double endMAcd = macds.get(macds.size() - 1);
                 if (endMAcd == 0) {
                     if (macds.get(macds.size() - 2) < 0) {
-                        startOptimalService(true);
+//                        startOptimalService(true);
+                        TradeManager.purchase(symbol);
                         Log.i(TAG, "<<<------ looper observer can buy,buy service start ------- <<<");
                     } else {
-                        startOptimalService(false);
+//                        startOptimalService(false);
+                        TradeManager.sellCoins(symbol);
                         Log.i(TAG, ">>>------ looper observer can sell,sell service start------- >>>");
                     }
                 } else if (endMAcd > 0) {
-                    startOptimalService(true);
+//                    startOptimalService(true);
+                    TradeManager.purchase(symbol);
                     Log.i(TAG, "<<<------ looper observer can buy ------- <<<");
                 } else {
-                    startOptimalService(false);
+//                    startOptimalService(false);
+                    TradeManager.sellCoins(symbol);
                     Log.i(TAG, ">>>------ looper observer can sell ------- >>>");
                 }
             } else {
                 Log.i(TAG, "------ looper observer rsi out of range ris1:" + rsi1.get(rsi1.size() - 1) + "------- ");
             }
         } else {
-            if (Analyzer.isContinuousDecrease(value.getKLineData(), 4)) {
+            if (Analyzer.isMacdContinueDecrease(macds, 4)) {
                 Log.i(TAG, "  <<<------ looper observer macd continue decrease at: " + TimeUtils.getCurrentTime() + "  -------<<< ");
-                startOptimalService(false);
+//                startOptimalService(false);
+                TradeManager.sellCoins(symbol);
             }
+
             Log.i(TAG, "  ------ looper observer macd no cross at: " + TimeUtils.getCurrentTime() + "  ------- ");
         }
     }

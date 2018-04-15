@@ -6,6 +6,7 @@ import android.util.Log;
 import com.leapord.supercoin.app.CoinApplication;
 import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.util.MD5Util;
+import com.leapord.supercoin.util.SslUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +35,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class HttpUtil {
 
-    private static final String BASE_URL = "https://www.okex.com/";
+    private static final String BASE_URL = "https://www.okex.cn/";
 
     //设置缓存目录
     private static final File cacheDirectory =
@@ -116,9 +117,9 @@ public class HttpUtil {
             .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
-//            .hostnameVerifier(((hostname, session) -> true))
-//            .followRedirects(true)
-//            .sslSocketFactory(SslUtils.initSSLSocketFactory(), SslUtils.initTrustManager())
+            .hostnameVerifier(((hostname, session) -> true))
+            .followRedirects(true)
+            .sslSocketFactory(SslUtils.initSSLSocketFactory(), SslUtils.initTrustManager())
             .addInterceptor(requestInterceptor)
             .addInterceptor(responseInterceptor)
             .addInterceptor(new HttpLoggingInterceptor(message -> Log.i("SuperCoin", message)).setLevel(HttpLoggingInterceptor.Level.BODY))

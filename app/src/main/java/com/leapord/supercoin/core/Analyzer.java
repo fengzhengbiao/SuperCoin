@@ -334,6 +334,17 @@ public class Analyzer {
         return true;
     }
 
+
+    public static boolean isMacdContinueDecrease(List<Double> macd, int num) {
+        int endIndex = macd.size() - 1;
+        for (int i = endIndex; i > endIndex - num; i--) {
+            if (macd.get(endIndex) > 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * 获取二次曲线的极点位置
      *
@@ -426,7 +437,7 @@ public class Analyzer {
     }
 
     public static boolean isMiddle(double value) {
-        return value > 20 && value < 80;
+        return value > 15 && value < 85;
     }
 
 }

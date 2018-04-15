@@ -29,13 +29,14 @@ public class BuyService extends TradeService {
             Log.i(TAG, "<<<------ KDJ not cross at end ------- <<<");
         }
         long lastSellTime = SpUtils.getLong(symbol + OkCoin.Trade.BUY_MARKET, 0l);
-        boolean range = lastSellTime - System.currentTimeMillis() < timeDiff;
+        boolean range = System.currentTimeMillis() - lastSellTime < timeDiff;
         if (range) {
-            Log.i(TAG, "<<<------ last sell time in range ------- <<<");
+            Log.i(TAG, "<<<------ last buy time in range ------- <<<");
         } else {
-            Log.i(TAG, "<<<------ last sell time out of range ------- <<<");
+            Log.i(TAG, "<<<------ last buy time out of range ------- <<<");
         }
-        if (range && isKDJPosivive) {
+        if ((!range) && isKDJPosivive) {
+            Log.e(TAG, "------ start purchase ------- <<<");
             TradeManager.purchase(symbol);
             mDisposiable.dispose();
             stopSelf();
