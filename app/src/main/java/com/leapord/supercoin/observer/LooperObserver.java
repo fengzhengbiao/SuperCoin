@@ -8,7 +8,6 @@ import com.leapord.supercoin.app.Const;
 import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.core.Analyzer;
 import com.leapord.supercoin.core.KlineCalculator;
-import com.leapord.supercoin.core.TradeManager;
 import com.leapord.supercoin.entity.http.LiveData;
 import com.leapord.supercoin.service.BuyService;
 import com.leapord.supercoin.service.SellService;
@@ -28,7 +27,7 @@ import java.util.Map;
 
 public class LooperObserver extends CoinObserver<LiveData> {
     private static final String TAG = "CoinProcess";
-    private long lastOptimalTime = 0;
+    private static long lastOptimalTime = 0;
 
 
     private static Map<String, LooperObserver> observerMap = new HashMap<>();
@@ -64,21 +63,21 @@ public class LooperObserver extends CoinObserver<LiveData> {
                 Double endMAcd = macds.get(macds.size() - 1);
                 if (endMAcd == 0) {
                     if (macds.get(macds.size() - 2) < 0) {
-//                        startOptimalService(true);
-                        TradeManager.purchase(symbol);
+                        startOptimalService(true);
+//                        TradeManager.purchase(symbol);
                         Log.i(TAG, "<<<------ looper observer can buy,buy service start ------- <<<");
                     } else {
-//                        startOptimalService(false);
-                        TradeManager.sellCoins(symbol);
+                        startOptimalService(false);
+//                        TradeManager.sellCoins(symbol);
                         Log.i(TAG, ">>>------ looper observer can sell,sell service start------- >>>");
                     }
                 } else if (endMAcd > 0) {
-//                    startOptimalService(true);
-                    TradeManager.purchase(symbol);
+                    startOptimalService(true);
+//                    TradeManager.purchase(symbol);
                     Log.i(TAG, "<<<------ looper observer can buy ------- <<<");
                 } else {
-//                    startOptimalService(false);
-                    TradeManager.sellCoins(symbol);
+                    startOptimalService(false);
+//                    TradeManager.sellCoins(symbol);
                     Log.i(TAG, ">>>------ looper observer can sell ------- >>>");
                 }
             } else {
@@ -87,8 +86,8 @@ public class LooperObserver extends CoinObserver<LiveData> {
         } else {
             if (Analyzer.isMacdContinueDecrease(macds, 4)) {
                 Log.i(TAG, "  <<<------ looper observer macd continue decrease at: " + TimeUtils.getCurrentTime() + "  -------<<< ");
-//                startOptimalService(false);
-                TradeManager.sellCoins(symbol);
+                startOptimalService(false);
+//                TradeManager.sellCoins(symbol);
             }
 
             Log.i(TAG, "  ------ looper observer macd no cross at: " + TimeUtils.getCurrentTime() + "  ------- ");

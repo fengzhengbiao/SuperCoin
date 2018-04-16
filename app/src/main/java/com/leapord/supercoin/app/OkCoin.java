@@ -36,6 +36,6 @@ public interface OkCoin {
         String SECRET_KEY = "625133937D92A58E9F04BB784A51BC35";
     }
 
-     long ONE_PERIOD = 5 * 60 * 1000;
+     long ONE_PERIOD = 15 * 60 * 1000;
 
 }

@@ -59,11 +59,11 @@ public class TradeManager {
             //获取法币数量
             double legaloinAmount = Double.parseDouble(userWithDepth.getUserInfo()
                     .getInfo().getFunds().getFree().get(coin_type));
-            double[] minBuyDepth = Analyzer.getMaxSellDepth(userWithDepth.getDepth());
-            double canBuyCount = legaloinAmount / minBuyDepth[0];
-            double amount = Math.min(canBuyCount, minBuyDepth[1]);
-            return Observable.zip(Observable.just(new OrderEvent(amount, minBuyDepth[0])),
-                    HttpUtil.createRequest().makeTrade(amount, minBuyDepth[0], symbol, OkCoin.Trade.BUY),
+            double[] maxBid = Analyzer.getMaxBid(userWithDepth.getDepth());
+            double canBuyCount = legaloinAmount / maxBid[0];
+            double amount = Math.min(canBuyCount, maxBid[1]);
+            return Observable.zip(Observable.just(new OrderEvent(amount, maxBid[0])),
+                    HttpUtil.createRequest().makeTrade(amount, maxBid[0], symbol, OkCoin.Trade.BUY),
                     OrderTransform::new);
         }).map(oderTransform -> {
                     Trade trade = new Trade();
@@ -99,10 +99,10 @@ public class TradeManager {
                     String coin_name = getCoinName(symbol);
                     double canSellAmount = Double.parseDouble(userWithDepth.getUserInfo()
                             .getInfo().getFunds().getFree().get(coin_name));
-                    double[] maxSellDepth = Analyzer.getMinBuyDepth(userWithDepth.getDepth());
-                    double amount = Math.min(canSellAmount, maxSellDepth[1]);
-                    return Observable.zip(Observable.just(new OrderEvent(amount, maxSellDepth[0])), HttpUtil.createRequest()
-                            .makeTrade(amount, maxSellDepth[0], symbol, OkCoin.Trade.SELL), OrderTransform::new);
+                    double[] minAsk = Analyzer.getMinAsk(userWithDepth.getDepth());
+                    double amount = Math.min(canSellAmount, minAsk[1]);
+                    return Observable.zip(Observable.just(new OrderEvent(amount, minAsk[0])), HttpUtil.createRequest()
+                            .makeTrade(amount, minAsk[0], symbol, OkCoin.Trade.SELL), OrderTransform::new);
                 }).map(oderTransform -> {
             Trade trade = new Trade();
             trade.setSymbol(symbol);

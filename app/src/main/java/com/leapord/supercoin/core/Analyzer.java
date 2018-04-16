@@ -96,7 +96,7 @@ public class Analyzer {
      * @param depth
      * @return [价格，数量]
      */
-    public static double[] getMinBuyDepth(Depth depth) {
+    public static double[] getMinAsk(Depth depth) {
         List<double[]> asks = depth.getAsks();
         return asks.get(asks.size() - 1);
     }
@@ -108,7 +108,7 @@ public class Analyzer {
      * @param depth
      * @return [价格，数量]
      */
-    public static double[] getMaxSellDepth(Depth depth) {
+    public static double[] getMaxBid(Depth depth) {
         List<double[]> bids = depth.getBids();
         return bids.get(0);
     }
