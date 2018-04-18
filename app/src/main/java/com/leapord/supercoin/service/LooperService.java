@@ -60,7 +60,7 @@ public class LooperService extends Service {
                 Logger.d(SYMBOLS);
                 Logger.d(KTIMES);
                 Logger.d(PERIOD);
-                Observable.interval(0, PERIOD , TimeUnit.SECONDS)
+                Observable.interval(0, PERIOD, TimeUnit.SECONDS)
                         .subscribeOn(Schedulers.io())
                         .subscribe(new CoinObserver<Long>() {
                             @Override
@@ -73,8 +73,7 @@ public class LooperService extends Service {
                             public void onNext(Long value) {
                                 for (String symbol : SYMBOLS) {
                                     Observable.zip(HttpUtil.createRequest().fetchKline(symbol, KTIMES.get(0)).subscribeOn(Schedulers.io()),
-                                            HttpUtil.createRequest().fetchKline(symbol, KTIMES.get(1)).subscribeOn(Schedulers.io()),
-                                            HttpUtil.createRequest().fetchDepth(symbol).subscribeOn(Schedulers.io()), LiveData::new)
+                                            HttpUtil.createRequest().fetchKline(symbol, KTIMES.get(1)).subscribeOn(Schedulers.io()), LiveData::new)
                                             .observeOn(Schedulers.io())
                                             .subscribe(LooperObserver.get(symbol));
                                 }

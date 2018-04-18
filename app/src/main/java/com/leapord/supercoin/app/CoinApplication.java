@@ -74,7 +74,13 @@ public class CoinApplication extends Application {
     }
 
 
+    private long lastOptimalTime;       //最后交易时间
 
+    public long getLastOptimalTime() {
+        return lastOptimalTime;
+    }
 
-
+    public void setLastOptimalTime(long lastOptimalTime) {
+        this.lastOptimalTime = lastOptimalTime;
+    }
 }

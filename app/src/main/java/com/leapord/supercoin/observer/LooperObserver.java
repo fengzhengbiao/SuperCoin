@@ -27,8 +27,6 @@ import java.util.Map;
 
 public class LooperObserver extends CoinObserver<LiveData> {
     private static final String TAG = "CoinProcess";
-    private static long lastOptimalTime = 0;
-
 
     private static Map<String, LooperObserver> observerMap = new HashMap<>();
     private String symbol;
@@ -97,9 +95,8 @@ public class LooperObserver extends CoinObserver<LiveData> {
 
     public void startOptimalService(boolean in) {
         Boolean autoTrasc = SpUtils.getBoolean(Const.AUTO_TRANSACTION, false);
-        long rangeTime = System.currentTimeMillis() - lastOptimalTime;
+        long rangeTime = System.currentTimeMillis() - CoinApplication.INSTANCE.getLastOptimalTime();
         if (rangeTime > OkCoin.ONE_PERIOD && autoTrasc) {
-            lastOptimalTime = System.currentTimeMillis();
             Intent buyIntent = new Intent(CoinApplication.INSTANCE, BuyService.class);
             buyIntent.putExtra("symbol", symbol);
             Intent sellIntent = new Intent(CoinApplication.INSTANCE, SellService.class);

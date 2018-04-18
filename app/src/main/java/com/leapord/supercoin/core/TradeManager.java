@@ -1,6 +1,5 @@
 package com.leapord.supercoin.core;
 
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -31,7 +30,6 @@ import io.reactivex.schedulers.Schedulers;
 public class TradeManager {
     private static final String TAG = "TradeManager";
     private static final int STANDARD_DIFF_TIME = 10 * 60 * 1000;
-    private static final double MIN_COIN_AMOUNT = 0.01;
 
 
     public static void purchase(String symbol) {
@@ -42,20 +40,20 @@ public class TradeManager {
                         userWithDepth.getUserInfo().getResult()
                                 && userWithDepth.getUserInfo().getInfo().getFunds() != null)
                 .filter(userWithDepth -> {
-                            String coin_type = getCoinZone(symbol);
+                            String coin_type = Analyzer.getCoinZone(symbol);
                             double remainCoin = Double.parseDouble(userWithDepth.getUserInfo()
                                     .getInfo().getFunds().getFree().get(coin_type));
-                            if (remainCoin < MIN_COIN_AMOUNT) {
+                            if (remainCoin < OkCoin.MIN_COIN_AMOUNT) {
                                 ToastUtis.showToast("coin not enough：" + coin_type);
                                 Log.i(TAG, "coin not enough：" + coin_type);
                             } else {
                                 Log.i(TAG, "have many coins");
                             }
-                            return remainCoin > MIN_COIN_AMOUNT;
+                            return remainCoin > OkCoin.MIN_COIN_AMOUNT;
                         }
                 ).flatMap(userWithDepth -> {
             //获取法币类型
-            String coin_type = getCoinZone(symbol);
+            String coin_type = Analyzer.getCoinZone(symbol);
             //获取法币数量
             double legaloinAmount = Double.parseDouble(userWithDepth.getUserInfo()
                     .getInfo().getFunds().getFree().get(coin_type));
@@ -97,14 +95,14 @@ public class TradeManager {
                         && userWithDepth.getUserInfo().getInfo().getFunds() != null)
                 .filter(userWithDepth -> {
                     boolean hasRemain = Double.parseDouble(userWithDepth.getUserInfo()     //确保存在该币种
-                            .getInfo().getFunds().getFree().get(getCoinName(symbol))) > MIN_COIN_AMOUNT;
+                            .getInfo().getFunds().getFree().get(Analyzer.getCoinName(symbol))) > OkCoin.MIN_COIN_AMOUNT;
                     if (!hasRemain) {
-                        Log.e(TAG, "hava no : " + getCoinName(symbol) + " remain");
+                        Log.e(TAG, "hava no : " + Analyzer.getCoinName(symbol) + " remain");
                     }
                     return hasRemain;
                 })
                 .flatMap(userWithDepth -> {
-                    String coin_name = getCoinName(symbol);
+                    String coin_name = Analyzer.getCoinName(symbol);
                     double canSellAmount = Double.parseDouble(userWithDepth.getUserInfo()
                             .getInfo().getFunds().getFree().get(coin_name));
 //                    double[] minAsk = Analyzer.getMinAsk(userWithDepth.getDepth());
@@ -186,17 +184,6 @@ public class TradeManager {
                         tradeDao.save(trade);
                     }
                 });
-    }
-
-
-    @NonNull
-    public static String getCoinName(String symbol) {
-        return symbol.substring(0, symbol.indexOf('_'));
-    }
-
-    @NonNull
-    public static String getCoinZone(String symbol) {
-        return symbol.substring(symbol.indexOf('_') + 1);
     }
 
 

@@ -1,5 +1,6 @@
 package com.leapord.supercoin.core;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.leapord.supercoin.entity.http.Depth;
@@ -446,6 +447,18 @@ public class Analyzer {
 
     public static boolean isMiddle(double value) {
         return value > 15 && value < 85;
+    }
+
+
+
+    @NonNull
+    public static String getCoinZone(String symbol) {
+        return symbol.substring(symbol.indexOf('_') + 1);
+    }
+
+    @NonNull
+    public static String getCoinName(String symbol) {
+        return symbol.substring(0, symbol.indexOf('_'));
     }
 
 }

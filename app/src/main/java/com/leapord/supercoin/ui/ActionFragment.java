@@ -15,6 +15,7 @@ import android.widget.RadioGroup;
 import com.alibaba.fastjson.JSON;
 import com.leapord.supercoin.R;
 import com.leapord.supercoin.app.Const;
+import com.leapord.supercoin.core.Analyzer;
 import com.leapord.supercoin.core.TradeManager;
 import com.leapord.supercoin.service.BuyService;
 import com.leapord.supercoin.service.KeepAliveService;
@@ -123,10 +124,10 @@ public class ActionFragment extends BaseFragment {
         for (int i = 0; i < symbols.size(); i++) {
             String s = symbols.get(i);
             if (i == 0) {
-                String zone = TradeManager.getCoinZone(s);
+                String zone = Analyzer.getCoinZone(s);
                 setZone(zone);
             }
-            String coinName = TradeManager.getCoinName(s);
+            String coinName = Analyzer.getCoinName(s);
             setName(coinName);
         }
         String ktime = SpUtils.getString(Const.SELECTED_KTIME, "");

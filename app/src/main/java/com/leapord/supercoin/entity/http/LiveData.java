@@ -25,4 +25,9 @@ public class LiveData implements Serializable {
         this.kLineData = kLineData;
         this.depth = depth;
     }
+
+    public LiveData(List<double[]> kLineData, List<double[]> subKlineData) {
+        this.kLineData = kLineData;
+        this.subKlineData = subKlineData;
+    }
 }
