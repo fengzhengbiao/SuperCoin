@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
@@ -75,6 +76,7 @@ public abstract class TradeService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
     }
 
     protected abstract void onDataRefresh(List<double[]> value, String symbol);
@@ -145,6 +147,14 @@ public abstract class TradeService extends Service {
                 mDisposiable.dispose();
             }
             findBestTime();
+
+            Observable.timer(4 * timeDiff, TimeUnit.SECONDS, Schedulers.io())
+                    .subscribeOn(AndroidSchedulers.mainThread())
+                    .subscribe(aLong -> {
+                        Log.e(TAG, "------- unreach price，stopself ------");
+                        stopSelf();
+                    });
+
         } else {
             Log.i(TAG, "proccessIntent: intent = null");
         }

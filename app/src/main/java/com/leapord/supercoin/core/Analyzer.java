@@ -97,8 +97,12 @@ public class Analyzer {
      * @return [价格，数量]
      */
     public static double[] getMinAsk(Depth depth) {
+        return getAskAt(depth, 0);
+    }
+
+    public static double[] getAskAt(Depth depth, int index) {
         List<double[]> asks = depth.getAsks();
-        return asks.get(asks.size() - 1);
+        return asks.get(asks.size() - 1 - index);
     }
 
 
@@ -109,8 +113,12 @@ public class Analyzer {
      * @return [价格，数量]
      */
     public static double[] getMaxBid(Depth depth) {
+        return getBidAt(depth, 0);
+    }
+
+    public static double[] getBidAt(Depth depth, int index) {
         List<double[]> bids = depth.getBids();
-        return bids.get(0);
+        return bids.get(index);
     }
 
     /**

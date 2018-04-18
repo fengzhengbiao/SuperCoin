@@ -1,14 +1,9 @@
 package com.leapord.supercoin.ui;
 
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import com.leapord.supercoin.R;
 import com.leapord.supercoin.util.ToastUtis;
-
-import butterknife.BindView;
 
 /*********************************************
  *  Author  JokerFish 
@@ -18,10 +13,6 @@ import butterknife.BindView;
  **********************************************/
 
 public class HomeFragment extends BaseFragment {
-    @BindView(R.id.swiperefreshlayout)
-    SwipeRefreshLayout swipeRefreshLayout;
-    @BindView(R.id.recyclerview)
-    RecyclerView recyclerView;
 
 
     @Override
@@ -32,7 +23,6 @@ public class HomeFragment extends BaseFragment {
     @Override
     protected void init(View rootView) {
         super.init(rootView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 //        recyclerView.setAdapter();
 
     }

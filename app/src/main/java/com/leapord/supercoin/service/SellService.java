@@ -2,10 +2,7 @@ package com.leapord.supercoin.service;
 
 import android.util.Log;
 
-import com.leapord.supercoin.app.Const;
-import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.core.TradeManager;
-import com.leapord.supercoin.util.SpUtils;
 import com.leapord.supercoin.util.TimeUtils;
 
 import java.util.List;
@@ -19,7 +16,6 @@ import java.util.List;
 public class SellService extends TradeService {
 
     private static final String TAG = "CoinProcess";
-    private int times;
 
     @Override
     protected void onDataRefresh(List<double[]> value, String symbol) {
@@ -30,16 +26,7 @@ public class SellService extends TradeService {
             mDisposiable.dispose();
             stopSelf();
         } else {
-            if (System.currentTimeMillis() - SpUtils.getLong(Const.SELL_SERVICESTART_TIME, 0l) > OkCoin.ONE_PERIOD) {
-                Log.i(TAG, "------ sell service, stop self :" + TimeUtils.getCurrentTime() + "  ------- ");
-            } else if (++times == 5) {
-                Log.i(TAG, "------ sell service, stop self :" + TimeUtils.getCurrentTime() + "  ------- ");
-                stopSelf();
-                times = 0;
-            } else {
-                Log.i(TAG, "---------sell service, onDataRefresh: no operation at: " + TimeUtils.getCurrentTime() + "  -------");
-
-            }
+            Log.i(TAG, "---------sell service, onDataRefresh: no operation at: " + TimeUtils.getCurrentTime() + "  -------");
         }
     }
 }

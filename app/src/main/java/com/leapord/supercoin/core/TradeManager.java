@@ -59,7 +59,9 @@ public class TradeManager {
             //获取法币数量
             double legaloinAmount = Double.parseDouble(userWithDepth.getUserInfo()
                     .getInfo().getFunds().getFree().get(coin_type));
-            double[] maxBid = Analyzer.getMaxBid(userWithDepth.getDepth());
+//            double[] maxBid = Analyzer.getMaxBid(userWithDepth.getDepth());
+            double[] maxBid = Analyzer.getBidAt(userWithDepth.getDepth(), 1);
+
             double canBuyCount = legaloinAmount / maxBid[0];
             double amount = Math.min(canBuyCount, maxBid[1]);
             return Observable.zip(Observable.just(new OrderEvent(amount, maxBid[0])),
@@ -93,13 +95,20 @@ public class TradeManager {
                 HttpUtil.createRequest().fetchDepth(symbol), UserWithDepth::new)
                 .filter(userWithDepth -> userWithDepth.getUserInfo().getResult()        //防止获取用户信息失败
                         && userWithDepth.getUserInfo().getInfo().getFunds() != null)
-                .filter(userWithDepth -> Double.parseDouble(userWithDepth.getUserInfo()     //确保存在该币种
-                        .getInfo().getFunds().getFree().get(getCoinName(symbol))) > MIN_COIN_AMOUNT)
+                .filter(userWithDepth -> {
+                    boolean hasRemain = Double.parseDouble(userWithDepth.getUserInfo()     //确保存在该币种
+                            .getInfo().getFunds().getFree().get(getCoinName(symbol))) > MIN_COIN_AMOUNT;
+                    if (!hasRemain) {
+                        Log.e(TAG, "hava no : " + getCoinName(symbol) + " remain");
+                    }
+                    return hasRemain;
+                })
                 .flatMap(userWithDepth -> {
                     String coin_name = getCoinName(symbol);
                     double canSellAmount = Double.parseDouble(userWithDepth.getUserInfo()
                             .getInfo().getFunds().getFree().get(coin_name));
-                    double[] minAsk = Analyzer.getMinAsk(userWithDepth.getDepth());
+//                    double[] minAsk = Analyzer.getMinAsk(userWithDepth.getDepth());
+                    double[] minAsk = Analyzer.getAskAt(userWithDepth.getDepth(), 1);
                     double amount = Math.min(canSellAmount, minAsk[1]);
                     return Observable.zip(Observable.just(new OrderEvent(amount, minAsk[0])), HttpUtil.createRequest()
                             .makeTrade(amount, minAsk[0], symbol, OkCoin.Trade.SELL), OrderTransform::new);

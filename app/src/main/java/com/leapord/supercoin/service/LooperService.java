@@ -126,7 +126,7 @@ public class LooperService extends Service {
                 PERIOD = Integer.parseInt(periodStr);
             }
         } else {
-            Logger.d("intent=null");
+            Logger.d("intent = null");
         }
     }
 

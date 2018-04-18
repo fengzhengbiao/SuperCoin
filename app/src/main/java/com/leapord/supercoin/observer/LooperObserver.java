@@ -97,7 +97,8 @@ public class LooperObserver extends CoinObserver<LiveData> {
 
     public void startOptimalService(boolean in) {
         Boolean autoTrasc = SpUtils.getBoolean(Const.AUTO_TRANSACTION, false);
-        if (System.currentTimeMillis() - lastOptimalTime > OkCoin.ONE_PERIOD && autoTrasc) {
+        long rangeTime = System.currentTimeMillis() - lastOptimalTime;
+        if (rangeTime > OkCoin.ONE_PERIOD && autoTrasc) {
             lastOptimalTime = System.currentTimeMillis();
             Intent buyIntent = new Intent(CoinApplication.INSTANCE, BuyService.class);
             buyIntent.putExtra("symbol", symbol);
@@ -114,6 +115,8 @@ public class LooperObserver extends CoinObserver<LiveData> {
                 CoinApplication.INSTANCE.startService(sellIntent);
                 CoinApplication.INSTANCE.stopService(buyIntent);
             }
+        } else {
+            Log.d(TAG, "------ optional in range ,range time remain：" + rangeTime + "s, at :" + TimeUtils.getCurrentTime() + "  ------- ");
         }
     }
 
