@@ -47,9 +47,9 @@ public class LooperObserver extends CoinObserver<LiveData> {
 
     @Override
     public void onNext(LiveData value) {
-        KlineCalculator calculator = new KlineCalculator(value.getKLineData());
+        KlineCalculator calculator = new KlineCalculator(value.getSubKlineData());
         List<Double> macds = calculator.computeMACDS();
-        boolean crossZero = Analyzer.hasCrossZero(macds, 1);
+        boolean crossZero = Analyzer.hasCrossZero(macds, CoinApplication.INSTANCE.getLastOptimalTime() == 0 ? 1 : 0);
         if (crossZero) {
             List<Double> rsi1 = calculator.computeRSI1();
             List<Double> rsi2 = calculator.computeRSI2();
@@ -62,41 +62,52 @@ public class LooperObserver extends CoinObserver<LiveData> {
                 if (endMAcd == 0) {
                     if (macds.get(macds.size() - 2) < 0) {
                         startOptimalService(true);
-//                        TradeManager.purchase(symbol);
                         Log.i(TAG, "<<<------ looper observer can buy,buy service start ------- <<<");
                     } else {
                         startOptimalService(false);
-//                        TradeManager.sellCoins(symbol);
                         Log.i(TAG, ">>>------ looper observer can sell,sell service start------- >>>");
                     }
                 } else if (endMAcd > 0) {
                     startOptimalService(true);
-//                    TradeManager.purchase(symbol);
                     Log.i(TAG, "<<<------ looper observer can buy ------- <<<");
                 } else {
                     startOptimalService(false);
-//                    TradeManager.sellCoins(symbol);
                     Log.i(TAG, ">>>------ looper observer can sell ------- >>>");
                 }
             } else {
                 Log.i(TAG, "------ looper observer rsi out of range ris1:" + rsi1.get(rsi1.size() - 1) + "------- ");
             }
         } else {
+            Log.i(TAG, "  ------ looper observer macd no cross at: " + TimeUtils.getCurrentTime() + "  ------- ");
             if (Analyzer.isMacdContinueDecrease(macds, 4)) {
                 Log.i(TAG, "  <<<------ looper observer macd continue decrease at: " + TimeUtils.getCurrentTime() + "  -------<<< ");
-                startOptimalService(false);
-//                TradeManager.sellCoins(symbol);
+                if (Analyzer.isFastIncrease(value.getKLineData())) {
+                    Log.e(TAG, "<<<------ looper observer can buy ------- <<<");
+                    startOptimalService(true, true);
+                } else {
+                    startOptimalService(false);
+                    Log.i(TAG, ">>>------ looper observer can sell ------- >>>");
+                }
             }
-
-            Log.i(TAG, "  ------ looper observer macd no cross at: " + TimeUtils.getCurrentTime() + "  ------- ");
+            if (Analyzer.isFastDecrease(value.getKLineData())) {
+                startOptimalService(false, true);
+                Log.e(TAG, ">>>------ looper observer can sell ------- >>>");
+            }
         }
     }
 
 
     public void startOptimalService(boolean in) {
+        startOptimalService(in, false);
+    }
+
+    public void startOptimalService(boolean in, boolean ignoreTime) {
         Boolean autoTrasc = SpUtils.getBoolean(Const.AUTO_TRANSACTION, false);
-        long rangeTime = System.currentTimeMillis() - CoinApplication.INSTANCE.getLastOptimalTime();
-        if (rangeTime > OkCoin.ONE_PERIOD && autoTrasc) {
+        boolean isOutRangeTime = true;
+        if (!ignoreTime) {
+            isOutRangeTime = System.currentTimeMillis() - CoinApplication.INSTANCE.getLastOptimalTime() > OkCoin.ONE_PERIOD;
+        }
+        if (isOutRangeTime && autoTrasc) {
             Intent buyIntent = new Intent(CoinApplication.INSTANCE, BuyService.class);
             buyIntent.putExtra("symbol", symbol);
             Intent sellIntent = new Intent(CoinApplication.INSTANCE, SellService.class);
@@ -112,9 +123,13 @@ public class LooperObserver extends CoinObserver<LiveData> {
                 CoinApplication.INSTANCE.startService(sellIntent);
                 CoinApplication.INSTANCE.stopService(buyIntent);
             }
-        } else {
-            Log.d(TAG, "------ optional in range ,range time remain：" + rangeTime + "s, at :" + TimeUtils.getCurrentTime() + "  ------- ");
         }
+
+        if (!ignoreTime)
+            Log.d(TAG, "------ optional in range ,range time remain："
+                    + (System.currentTimeMillis() - CoinApplication.INSTANCE.getLastOptimalTime())
+                    + "s, at :" + TimeUtils.getCurrentTime() + "  ------- ");
+
     }
 
 }

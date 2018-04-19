@@ -8,8 +8,10 @@ import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.entity.dao.Trade;
 import com.leapord.supercoin.entity.dao.TradeDao;
 import com.leapord.supercoin.entity.event.OrderEvent;
+import com.leapord.supercoin.entity.http.CancelTradeResp;
 import com.leapord.supercoin.entity.http.Order;
 import com.leapord.supercoin.entity.http.OrderTransform;
+import com.leapord.supercoin.entity.http.TradeResponse;
 import com.leapord.supercoin.entity.http.UserWithDepth;
 import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.TradeObserver;
@@ -17,7 +19,9 @@ import com.leapord.supercoin.util.SpUtils;
 import com.leapord.supercoin.util.ToastUtis;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 /*********************************************
@@ -29,8 +33,6 @@ import io.reactivex.schedulers.Schedulers;
 
 public class TradeManager {
     private static final String TAG = "TradeManager";
-    private static final int STANDARD_DIFF_TIME = 10 * 60 * 1000;
-
 
     public static void purchase(String symbol) {
         Observable.zip(HttpUtil.createRequest().fetchUserInfo(),
@@ -127,6 +129,52 @@ public class TradeManager {
 
 
     /**
+     * 卖出
+     */
+    public static void sellCoinsAuto(String symbol) {
+        Observable.zip(HttpUtil.createRequest().fetchUserInfo(),
+                HttpUtil.createRequest().fetchDepth(symbol), UserWithDepth::new)
+                .filter(userWithDepth -> userWithDepth.getUserInfo().getResult()
+                        && userWithDepth.getUserInfo().getInfo().getFunds() != null)
+                .groupBy(userWithDepth -> Double.parseDouble(userWithDepth.getUserInfo().getInfo().getFunds().getFreezed().get(Analyzer.getCoinName(symbol))) > 0)
+                .subscribe(observable -> {
+                    observable.flatMap(userWithDepth -> {
+                        String coin_name = Analyzer.getCoinName(symbol);
+                        double canSellAmount = Double.parseDouble(userWithDepth.getUserInfo()
+                                .getInfo().getFunds().getFree().get(coin_name));
+                        double[] minAsk = Analyzer.getAskAt(userWithDepth.getDepth(), observable.getKey() ? 0 : 1);
+                        double amount = Math.min(canSellAmount, minAsk[1]);
+                        return Observable.zip(Observable.just(new OrderEvent(amount, minAsk[0])), observable.getKey() ?
+                                HttpUtil.createRequest()
+                                        .fetchOrderInfo("-1", symbol)
+                                        .flatMap(orderData -> Observable.fromIterable(orderData.getOrders()))
+                                        .filter(orderData -> orderData.getStatus() == 0)
+                                        .flatMap(orderData -> HttpUtil.createRequest().cancelTrade(symbol, String.valueOf(orderData.getOrder_id())))
+                                        .flatMap((Function<CancelTradeResp, ObservableSource<TradeResponse>>) cancelTradeResp -> {
+                                            if (!TextUtils.isEmpty(cancelTradeResp.getSuccess()))
+                                                Log.e(TAG, "------- cancle trade success ------- ");
+                                            return HttpUtil.createRequest().makeTrade(amount, minAsk[0], symbol, OkCoin.Trade.SELL);
+                                        })
+                                : HttpUtil.createRequest().makeTrade(amount, minAsk[0], symbol, OkCoin.Trade.SELL), OrderTransform::new);
+                    }).map(oderTransform -> {
+                        Trade trade = new Trade();
+                        trade.setSymbol(symbol);
+                        trade.setAmount(String.valueOf(oderTransform.getEvent().getAmount()));
+                        trade.setPrice(String.valueOf(oderTransform.getEvent().getPrice()));
+                        trade.setOrderId(oderTransform.getResponse().getOrder_id());
+                        trade.setSellType(OkCoin.Trade.SELL);
+                        trade.setStatus(oderTransform.getResponse().isResult());
+                        Log.e("CoinProcess", "sell: amount:" + oderTransform.getEvent().getAmount() + " price:" + oderTransform.getEvent().getPrice());
+                        return trade;
+                    }).subscribeOn(Schedulers.io())
+                            .subscribe(new TradeObserver());
+
+                });
+
+    }
+
+
+    /**
      * @param symbol
      * @param orderId 取消订单  针对单个订单
      */
@@ -165,7 +213,7 @@ public class TradeManager {
                 .subscribe(cancelTradeResp -> {
                     String successOrders = cancelTradeResp.getSuccess();
                     TradeDao tradeDao = CoinApplication.INSTANCE.getDaoSession().getTradeDao();
-                    if (successOrders.contains(",")) {
+                    if (!TextUtils.isEmpty(successOrders) && successOrders.contains(",")) {
                         String[] split = successOrders.trim().split(",");
                         for (int i = 0; i < split.length; i++) {
                             Trade trade = new Trade();

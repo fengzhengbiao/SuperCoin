@@ -74,7 +74,7 @@ public class LooperService extends Service {
                                 for (String symbol : SYMBOLS) {
                                     Observable.zip(HttpUtil.createRequest().fetchKline(symbol, KTIMES.get(0)).subscribeOn(Schedulers.io()),
                                             HttpUtil.createRequest().fetchKline(symbol, KTIMES.get(1)).subscribeOn(Schedulers.io()), LiveData::new)
-                                            .observeOn(Schedulers.io())
+                                            .observeOn(Schedulers.computation())
                                             .subscribe(LooperObserver.get(symbol));
                                 }
                             }

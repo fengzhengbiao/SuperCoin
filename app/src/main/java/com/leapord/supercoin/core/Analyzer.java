@@ -450,7 +450,6 @@ public class Analyzer {
     }
 
 
-
     @NonNull
     public static String getCoinZone(String symbol) {
         return symbol.substring(symbol.indexOf('_') + 1);
@@ -460,5 +459,48 @@ public class Analyzer {
     public static String getCoinName(String symbol) {
         return symbol.substring(0, symbol.indexOf('_'));
     }
+
+
+    public static boolean isFastIncrease(List<double[]> kLineData) {
+        KlineCalculator calculator = new KlineCalculator(kLineData);
+        List<Double> macds = calculator.computeMACDS();
+        int endIndex = macds.size() - 1;
+        Double endMacd0 = macds.get(endIndex);
+        Double endMacd1 = macds.get(endIndex - 1);
+        Double endMacd2 = macds.get(endIndex - 2);
+        if (endMacd0 > 0 && endMacd1 > 0 && endMacd2 > 0) {
+            if (endMacd0 > endMacd1 && endMacd1 > endMacd2) {
+                List<Double> K = calculator.computeK();
+                List<Double> D = calculator.computeD();
+                List<Double> J = calculator.computeJ();
+                if (J.get(J.size() - 1) > K.get(K.size() - 1) && K.get(K.size() - 1) > D.get(D.size() - 1)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
+    public static boolean isFastDecrease(List<double[]> kLineData) {
+        KlineCalculator calculator = new KlineCalculator(kLineData);
+        List<Double> macds = calculator.computeMACDS();
+        int endIndex = macds.size() - 1;
+        Double endMacd0 = macds.get(endIndex);
+        Double endMacd1 = macds.get(endIndex - 1);
+        Double endMacd2 = macds.get(endIndex - 2);
+        if (endMacd0 < 0 && endMacd1 < 0 && endMacd2 < 0) {
+            if (endMacd0 < endMacd1 && endMacd1 < endMacd2) {
+                List<Double> K = calculator.computeK();
+                List<Double> D = calculator.computeD();
+                List<Double> J = calculator.computeJ();
+                if (J.get(J.size() - 1) < K.get(K.size() - 1) && K.get(K.size() - 1) < D.get(D.size() - 1)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
 }
