@@ -153,7 +153,7 @@ public class TradeManager {
                                         .flatMap(orderData -> HttpUtil.createRequest().cancelTrade(symbol, String.valueOf(orderData.getOrder_id())))
                                         .flatMap((Function<CancelTradeResp, ObservableSource<TradeResponse>>) cancelTradeResp -> {
                                             if (!TextUtils.isEmpty(cancelTradeResp.getSuccess()))
-                                                Log.e(TAG, "------- cancle trade success ------- ");
+                                                LogUtil.e(TAG, "------- cancle trade success ------- ");
                                             return HttpUtil.createRequest().makeTrade(amount, minAsk[0], symbol, OkCoin.Trade.SELL);
                                         })
                                 : HttpUtil.createRequest().makeTrade(amount, minAsk[0], symbol, OkCoin.Trade.SELL), OrderTransform::new);
@@ -165,7 +165,7 @@ public class TradeManager {
                         trade.setOrderId(oderTransform.getResponse().getOrder_id());
                         trade.setSellType(OkCoin.Trade.SELL);
                         trade.setStatus(oderTransform.getResponse().isResult());
-                        Log.e("CoinProcess", "sell: amount:" + oderTransform.getEvent().getAmount() + " price:" + oderTransform.getEvent().getPrice());
+                        LogUtil.e("CoinProcess", "sell: amount:" + oderTransform.getEvent().getAmount() + " price:" + oderTransform.getEvent().getPrice());
                         return trade;
                     }).subscribeOn(Schedulers.io())
                             .subscribe(new TradeObserver());

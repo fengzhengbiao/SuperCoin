@@ -7,7 +7,6 @@ import com.leapord.supercoin.entity.http.UserInfo;
 import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.CoinObserver;
 import com.leapord.supercoin.util.LogUtil;
-import com.leapord.supercoin.util.TimeUtils;
 
 import java.util.List;
 
@@ -29,11 +28,11 @@ public class SellService extends TradeService {
         boolean isKDJNegative = calcCross(value) || TENDENCY < 0;
         if (isKDJNegative) {
             LogUtil.d(TAG, ">>> -------- KDJ Negative sell coin--------- >>>");
-            TradeManager.sellCoins(symbol);
+            TradeManager.sellCoinsAuto(symbol);
             mDisposiable.dispose();
             stopSelf();
         } else {
-            LogUtil.i(TAG, "---------sell service, onDataRefresh: no operation at: " + TimeUtils.getCurrentTime() + "  -------");
+            LogUtil.i(TAG, " onDataRefresh: no operation" );
             HttpUtil.createRequest()
                     .fetchUserInfo()
                     .subscribeOn(Schedulers.io())
