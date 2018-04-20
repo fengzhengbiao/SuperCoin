@@ -15,6 +15,7 @@ import com.leapord.supercoin.entity.http.TradeResponse;
 import com.leapord.supercoin.entity.http.UserWithDepth;
 import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.TradeObserver;
+import com.leapord.supercoin.util.LogUtil;
 import com.leapord.supercoin.util.SpUtils;
 import com.leapord.supercoin.util.ToastUtis;
 
@@ -47,9 +48,9 @@ public class TradeManager {
                                     .getInfo().getFunds().getFree().get(coin_type));
                             if (remainCoin < OkCoin.MIN_COIN_AMOUNT) {
                                 ToastUtis.showToast("coin not enough：" + coin_type);
-                                Log.i(TAG, "coin not enough：" + coin_type);
+                                LogUtil.e(TAG, "coin not enough：" + coin_type);
                             } else {
-                                Log.i(TAG, "have many coins");
+                                LogUtil.i(TAG, "have many coins");
                             }
                             return remainCoin > OkCoin.MIN_COIN_AMOUNT;
                         }
@@ -99,7 +100,7 @@ public class TradeManager {
                     boolean hasRemain = Double.parseDouble(userWithDepth.getUserInfo()     //确保存在该币种
                             .getInfo().getFunds().getFree().get(Analyzer.getCoinName(symbol))) > OkCoin.MIN_COIN_AMOUNT;
                     if (!hasRemain) {
-                        Log.e(TAG, "hava no : " + Analyzer.getCoinName(symbol) + " remain");
+                        LogUtil.e(TAG, "hava no : " + Analyzer.getCoinName(symbol) + " remain");
                     }
                     return hasRemain;
                 })
@@ -120,7 +121,7 @@ public class TradeManager {
             trade.setOrderId(oderTransform.getResponse().getOrder_id());
             trade.setSellType(OkCoin.Trade.SELL);
             trade.setStatus(oderTransform.getResponse().isResult());
-            Log.e("CoinProcess", "sell: amount:" + oderTransform.getEvent().getAmount() + " price:" + oderTransform.getEvent().getPrice());
+            LogUtil.e("CoinProcess", "sell: amount:" + oderTransform.getEvent().getAmount() + " price:" + oderTransform.getEvent().getPrice());
             return trade;
         }).subscribeOn(Schedulers.io())
                 .subscribe(new TradeObserver());

@@ -2,8 +2,7 @@ package com.leapord.supercoin.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-
-import com.orhanobut.logger.Logger;
+import android.util.Log;
 
 
 /**
@@ -18,7 +17,7 @@ public class SpUtils {
         if (sharedPreferences == null) {
             sharedPreferences = context.getSharedPreferences("coin_config", Context.MODE_PRIVATE);
         }
-        Logger.d("SpUtils has been initialized");
+        Log.i("SpUtils", "SpUtils has been initialized");
     }
 
     public static boolean isInit() {

@@ -1,12 +1,10 @@
 package com.leapord.supercoin.observer;
 
-import android.util.Log;
-
 import com.leapord.supercoin.app.CoinApplication;
 import com.leapord.supercoin.entity.dao.Trade;
 import com.leapord.supercoin.entity.dao.TradeDao;
 import com.leapord.supercoin.entity.event.TradeChangeEvent;
-import com.leapord.supercoin.util.TimeUtils;
+import com.leapord.supercoin.util.LogUtil;
 import com.leapord.supercoin.util.ToastUtis;
 
 import org.greenrobot.eventbus.EventBus;
@@ -23,7 +21,7 @@ public class TradeObserver extends CoinObserver<Trade> {
     @Override
     public void onNext(Trade trade) {
         CoinApplication.INSTANCE.setLastOptimalTime(System.currentTimeMillis());
-        Log.e("CoinProcess", ">>>   ******   -----   make one trade, type : " + trade.getSellType() + "  time：" + TimeUtils.getCurrentTime() + "-----  *****    >>>");
+        LogUtil.e("CoinProcess", " >>>   ******  make one trade, type : " + trade.getSellType());
         TradeDao tradeDao = CoinApplication.INSTANCE.getDaoSession().getTradeDao();
         tradeDao.save(trade);
         EventBus.getDefault().post(new TradeChangeEvent(trade.getSellType(), trade.getSymbol()));
@@ -32,7 +30,7 @@ public class TradeObserver extends CoinObserver<Trade> {
     @Override
     public void onError(Throwable e) {
         ToastUtis.showToast("交易失败：" + e.toString());
-        Log.i(TAG, "onError: " + e.toString());
+        LogUtil.i(TAG, "onError: " + e.toString());
         super.onError(e);
     }
 }

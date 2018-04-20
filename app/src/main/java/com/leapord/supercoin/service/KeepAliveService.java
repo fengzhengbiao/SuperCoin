@@ -13,7 +13,7 @@ import com.alibaba.fastjson.JSON;
 import com.leapord.supercoin.app.Const;
 import com.leapord.supercoin.util.CommonUtil;
 import com.leapord.supercoin.util.SpUtils;
-import com.orhanobut.logger.Logger;
+
 
 import java.util.ArrayList;
 
@@ -48,9 +48,7 @@ public class KeepAliveService extends JobService {
             ArrayList<String> ktimes = (ArrayList<String>) JSON.parseArray(ktime, String.class);
             intent.putStringArrayListExtra("KTIMES", ktimes);
             intent.putExtra("PERIOD", SpUtils.getString(Const.SELECTED_PERIOD, ""));
-
             this.startService(intent);
-            Logger.d("轮询服务重启");
         }
         return true;
     }

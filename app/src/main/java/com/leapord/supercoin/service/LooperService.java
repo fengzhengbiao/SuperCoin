@@ -14,7 +14,7 @@ import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.CoinObserver;
 import com.leapord.supercoin.observer.LooperObserver;
 import com.leapord.supercoin.util.ToastUtis;
-import com.orhanobut.logger.Logger;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,9 +57,6 @@ public class LooperService extends Service {
     private void startLoop() {
         if (mDisposiable == null || mDisposiable.isDisposed()) {
             if (SYMBOLS.size() != 0) {
-                Logger.d(SYMBOLS);
-                Logger.d(KTIMES);
-                Logger.d(PERIOD);
                 Observable.interval(0, PERIOD, TimeUnit.SECONDS)
                         .subscribeOn(Schedulers.io())
                         .subscribe(new CoinObserver<Long>() {
@@ -125,7 +122,7 @@ public class LooperService extends Service {
                 PERIOD = Integer.parseInt(periodStr);
             }
         } else {
-            Logger.d("intent = null");
+            Log.i("Looper", "processIntent: intent = null");
         }
     }
 
