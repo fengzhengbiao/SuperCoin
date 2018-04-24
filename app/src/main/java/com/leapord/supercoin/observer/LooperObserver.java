@@ -30,6 +30,9 @@ public class LooperObserver extends CoinObserver<LiveData> {
     private static Map<String, LooperObserver> observerMap = new HashMap<>();
     private String symbol;
 
+
+    private static boolean RECENT_TENDENCY;
+
     private LooperObserver(String symbol) {
         this.symbol = symbol;
     }
@@ -88,7 +91,7 @@ public class LooperObserver extends CoinObserver<LiveData> {
                     startOptimalService(false);
                 }
             }
-            if (Analyzer.isFastDecrease(value.getKLineData())) {
+            if (Analyzer.isMacdContinueDecrease(macds, 4)) {
                 startOptimalService(false, true);
                 LogUtil.e(TAG, "sub kline fast decrease");
             }

@@ -88,6 +88,85 @@ public class TradeManager {
     }
 
 
+    public static void purchaseAuto(String symbol) {
+        Observable.zip(HttpUtil.createRequest().fetchUserInfo(),
+                HttpUtil.createRequest().fetchDepth(symbol), UserWithDepth::new)
+                .observeOn(Schedulers.io())
+                .filter(userWithDepth ->
+                        userWithDepth.getUserInfo().getResult()
+                                && userWithDepth.getUserInfo().getInfo().getFunds() != null)
+                .filter(userWithDepth -> {
+                            String coinZone = Analyzer.getCoinZone(symbol);
+                            double remainZoneCoin = Double.parseDouble(userWithDepth.getUserInfo()
+                                    .getInfo().getFunds().getFree().get(coinZone));
+                            String coinName = Analyzer.getCoinName(symbol);
+                            double remainFreezedCoin = Double.parseDouble(userWithDepth.getUserInfo()
+                                    .getInfo().getFunds().getFree().get(coinName));
+                            boolean hasLegalCoin = remainZoneCoin > OkCoin.MIN_COIN_AMOUNT;
+                            if (hasLegalCoin) {
+                                LogUtil.i(TAG, "have many coins");
+                            } else {
+                                ToastUtis.showToast("coin not enough：" + coinZone);
+                                LogUtil.e(TAG, "coin not enough：" + coinZone);
+                            }
+                            boolean hasFreezedOrder = remainFreezedCoin > OkCoin.MIN_COIN_AMOUNT;
+                            if (hasFreezedOrder)
+                                LogUtil.e(TAG, "have order freezed: " + remainFreezedCoin);
+                            return hasLegalCoin || hasFreezedOrder;
+                        }
+                ).groupBy(userWithDepth -> {
+            String coinName = Analyzer.getCoinName(symbol);
+            double remainFreezedCoin = Double.parseDouble(userWithDepth.getUserInfo()
+                    .getInfo().getFunds().getFree().get(coinName));
+            return remainFreezedCoin > OkCoin.MIN_COIN_AMOUNT;
+        }).subscribe(observable -> {
+
+            observable.flatMap(userWithDepth -> {
+                //获取法币类型
+                String coin_type = Analyzer.getCoinZone(symbol);
+                //获取法币数量
+                double legaloinAmount = Double.parseDouble(userWithDepth.getUserInfo()
+                        .getInfo().getFunds().getFree().get(coin_type));
+//            double[] maxBid = Analyzer.getMaxBid(userWithDepth.getDepth());
+                double[] maxBid = Analyzer.getBidAt(userWithDepth.getDepth(), 1);
+
+                double canBuyCount = legaloinAmount / maxBid[0];
+                double amount = Math.min(canBuyCount, maxBid[1]);
+                return Observable.zip(Observable.just(new OrderEvent(amount, maxBid[0])), observable.getKey() ?
+                                HttpUtil.createRequest()
+                                        .fetchOrderInfo("-1", symbol)
+                                        .flatMap(orderData -> Observable.fromIterable(orderData.getOrders()))
+                                        .filter(orderData -> orderData.getStatus() == 0)
+                                        .flatMap(orderData -> HttpUtil.createRequest().cancelTrade(symbol, String.valueOf(orderData.getOrder_id())))
+                                        .flatMap((Function<CancelTradeResp, ObservableSource<TradeResponse>>) cancelTradeResp -> {
+                                            if (!TextUtils.isEmpty(cancelTradeResp.getSuccess()))
+                                                LogUtil.e(TAG, "------- cancle trade success ------- ");
+                                            return HttpUtil.createRequest().makeTrade(amount, maxBid[0], symbol, OkCoin.Trade.BUY);
+                                        })
+                                : HttpUtil.createRequest().makeTrade(amount, maxBid[0], symbol, OkCoin.Trade.BUY),
+                        OrderTransform::new);
+            }).map(oderTransform -> {
+                        Trade trade = new Trade();
+                        trade.setSymbol(symbol);
+                        SpUtils.putLong(symbol + OkCoin.Trade.BUY_MARKET, System.currentTimeMillis());
+                        Log.e("CoinProcess", "purchase: amount:" + oderTransform.getEvent().getAmount() + " price:" + oderTransform.getEvent().getPrice());
+                        trade.setAmount(String.valueOf(oderTransform.getEvent().getAmount()));
+                        trade.setPrice(String.valueOf(oderTransform.getEvent().getPrice()));
+                        trade.setOrderId(oderTransform.getResponse().getOrder_id());
+                        trade.setSellType(OkCoin.Trade.BUY);
+                        trade.setStatus(oderTransform.getResponse().isResult());
+                        return trade;
+                    }
+            )
+                    .subscribeOn(Schedulers.io())
+                    .subscribe(new TradeObserver());
+
+        });
+
+
+    }
+
+
     /**
      * 卖出
      */
@@ -130,7 +209,7 @@ public class TradeManager {
 
 
     /**
-     * 卖出
+     * 卖出  能取消挂单并且重新下单
      */
     public static void sellCoinsAuto(String symbol) {
         Observable.zip(HttpUtil.createRequest().fetchUserInfo(),
@@ -167,7 +246,8 @@ public class TradeManager {
                         trade.setStatus(oderTransform.getResponse().isResult());
                         LogUtil.e("CoinProcess", "sell: amount:" + oderTransform.getEvent().getAmount() + " price:" + oderTransform.getEvent().getPrice());
                         return trade;
-                    }).subscribeOn(Schedulers.io())
+                    }).filter(trade -> Double.parseDouble(trade.getAmount()) > OkCoin.MIN_COIN_AMOUNT)
+                            .subscribeOn(Schedulers.io())
                             .subscribe(new TradeObserver());
 
                 });

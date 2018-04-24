@@ -39,6 +39,8 @@ public interface OkCoin {
 
     long ONE_PERIOD = 15 * 60 * 1000;
 
+    long ONE_TDAY = 24 * 60 * 60 * 1000;
+
 
     double MIN_COIN_AMOUNT = 0.01;
 }

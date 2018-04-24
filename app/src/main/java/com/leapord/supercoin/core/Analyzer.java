@@ -200,6 +200,40 @@ public class Analyzer {
     }
 
 
+    /**
+     * 获取一阶拟合曲线的斜率
+     *
+     * @param kNums
+     * @param sampSize
+     * @return
+     */
+    public static double getPloyfitRatio(List<double[]> kNums, int sampSize) {
+        int startIndex = kNums.size() - 1 - sampSize;
+        WeightedObservedPoints ployfits = new WeightedObservedPoints();
+        // 将x-y数据元素调用points.add(x[i], y[i])加入到观察点序列中
+        for (int i = startIndex; i < kNums.size(); i++) {
+            double[] kPoint = kNums.get(i);
+            ployfits.add(i, kPoint[1]);
+        }
+        // degree 指定多项式阶数
+        PolynomialCurveFitter fitter = PolynomialCurveFitter.create(1);
+        // 曲线拟合，结果保存于双精度数组中，由常数项至最高次幂系数排列
+        double ratio = fitter.fit(ployfits.toList())[1];
+        return ratio;
+    }
+
+
+    public static double calcSampleSize(Long startTime, List<double[]> kNums) {
+        int endIndex = kNums.size() - 1;
+        for (int i = endIndex; i > 0; i--) {
+            if (kNums.get(i)[0] < startTime) {
+                return endIndex - i;
+            }
+        }
+        return 0;
+    }
+
+
     public static double[] calcLineRatio(List<Double> lineData, int sampSize) {
         int startIndex = lineData.size() - 1 - sampSize;
         WeightedObservedPoints fullPoints = new WeightedObservedPoints();

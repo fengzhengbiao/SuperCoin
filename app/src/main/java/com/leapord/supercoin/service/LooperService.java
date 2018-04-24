@@ -15,7 +15,6 @@ import com.leapord.supercoin.observer.CoinObserver;
 import com.leapord.supercoin.observer.LooperObserver;
 import com.leapord.supercoin.util.ToastUtis;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -80,6 +79,9 @@ public class LooperService extends Service {
                 ToastUtis.showToast("请重新开启服务");
             }
         }
+
+
+
     }
 
 

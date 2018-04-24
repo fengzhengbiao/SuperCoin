@@ -41,7 +41,7 @@ public class BuyService extends TradeService {
         }
         if ((!range) && isKDJPosivive) {
             LogUtil.d(TAG, " start purchase ");
-            TradeManager.purchase(symbol);
+            TradeManager.purchaseAuto(symbol);
             mDisposiable.dispose();
             stopSelf();
         } else {
