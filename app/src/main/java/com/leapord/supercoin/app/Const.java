@@ -30,4 +30,14 @@ public interface Const {
 
 
 
+    String FUTURE_SYMBOLS = "future_symbols";
+
+    String FUTURE_PERIOD ="future_period";
+
+    String FUTURE_KLINE ="future_kline";
+
+    String FUTURE_ZONE ="future_zone";
+
+
+
 }

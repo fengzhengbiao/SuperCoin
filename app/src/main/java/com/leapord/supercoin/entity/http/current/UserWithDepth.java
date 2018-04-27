@@ -1,4 +1,6 @@
-package com.leapord.supercoin.entity.http;
+package com.leapord.supercoin.entity.http.current;
+
+import com.leapord.supercoin.entity.http.Depth;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

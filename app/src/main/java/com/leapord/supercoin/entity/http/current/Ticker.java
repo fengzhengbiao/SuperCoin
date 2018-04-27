@@ -1,4 +1,4 @@
-package com.leapord.supercoin.entity.http;
+package com.leapord.supercoin.entity.http.current;
 
 import lombok.Data;
 
@@ -18,6 +18,9 @@ public class Ticker {
      * low : 32.05   最低价
      * sell : 33.16   卖一价
      * vol : 10532696.39199642   成交量(最近的24小时)
+     * "contract_id":20140926012,
+     * "unit_amount":100.0
+     * <p>
      */
 
     private float buy;
@@ -26,5 +29,10 @@ public class Ticker {
     private float low;
     private float sell;
     private float vol;
+
+    //合约才有
+    private Long contract_id;
+    private float unit_amount;
+
 
 }

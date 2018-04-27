@@ -1,6 +1,6 @@
 package com.leapord.supercoin.entity.event;
 
-import com.leapord.supercoin.entity.http.LiveData;
+import com.leapord.supercoin.entity.http.current.LiveData;
 
 import java.util.List;
 

@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.leapord.supercoin.R;
-import com.leapord.supercoin.entity.http.KlineAnalyzeInfo;
+import com.leapord.supercoin.entity.http.current.KlineAnalyzeInfo;
 import com.leapord.supercoin.util.CommonUtil;
 import com.leapord.supercoin.util.TimeUtils;
 

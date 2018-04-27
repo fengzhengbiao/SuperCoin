@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.navigation_notifications:
                 switchFragment(2);
                 return true;
+
         }
         return false;
     };
@@ -44,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         fragmentList.add(new HomeFragment());
         fragmentList.add(new HistoryFragment());
-        fragmentList.add(new ActionFragment());
+        fragmentList.add(new SettingFragment());
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
                 .replace(R.id.container, fragmentList.get(0))

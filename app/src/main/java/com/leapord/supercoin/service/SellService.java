@@ -3,7 +3,7 @@ package com.leapord.supercoin.service;
 import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.core.Analyzer;
 import com.leapord.supercoin.core.TradeManager;
-import com.leapord.supercoin.entity.http.UserInfo;
+import com.leapord.supercoin.entity.http.current.UserInfo;
 import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.CoinObserver;
 import com.leapord.supercoin.util.LogUtil;

@@ -26,6 +26,28 @@ public interface OkCoin {
     }
 
 
+    interface CONTRACT_TYPE {
+
+        String THIS_WEEK = "this_week";
+
+        String NEXT_WEEK = "next_week";
+
+        String QUARTER = "quarter";
+
+    }
+
+    interface FUTURE_TYPE {
+
+        String OPEN_INCREASE = "1";        //开多
+
+        String OPEN_DECREASE = "2";       //开空
+
+        String CLOSE_INCREASE = "3";       //平多
+
+        String CLOSE_DECREASE = "4";       //平空
+    }
+
+
     interface API {
         //        String API_KEY = "2c31b63a-9d64-4889-935c-25f319102832";  //yuan
         String API_KEY = "7752d9e0-d261-491a-8460-49920a13f0ab";          //feng
@@ -43,4 +65,6 @@ public interface OkCoin {
 
 
     double MIN_COIN_AMOUNT = 0.01;
+
+    double MIN_COIN_RIGHT = 0.1;
 }

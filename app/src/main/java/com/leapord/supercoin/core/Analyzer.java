@@ -536,5 +536,33 @@ public class Analyzer {
         return false;
     }
 
+    //    计算两个相邻交点的最大距离Y差值
+    public static double calcMaxDiffInNearPoint(List<Double> k, List<Double> d, List<Double> j) {
+        int preCrossIndex = 0;
+        int lastCrossIndex = 0;
+        int num = 0;
+        int endIndex = k.size() - 1;
+        for (int i = endIndex; i > 0; i--) {
+            if (k.get(i) == j.get(i) && j.get(i) == d.get(i)) {
+                if (num == 0) {
+                    lastCrossIndex = i;
+                } else {
+                    preCrossIndex = i;
+                    break;
+                }
+                num++;
+                Log.i(TAG, "calcMaxDiffInNearPoint: index:" + i + "  value:" + k.get(i));
+            }
+        }
+        if (num < 2) {
+            return 0;
+        } else {
+            double diff = 0;
+            for (int i = preCrossIndex; i <= lastCrossIndex; i++) {
+                diff = Math.max(Math.abs(j.get(i) - d.get(i)), diff);
+            }
+            return diff;
+        }
+    }
 
 }

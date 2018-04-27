@@ -1,4 +1,4 @@
-package com.leapord.supercoin.entity.http;
+package com.leapord.supercoin.entity.http.current;
 
 import lombok.Data;
 
@@ -11,5 +11,5 @@ import lombok.Data;
 @Data
 public class BbTicker {
   private String date;
-  private BbTicker ticker;
+  private Ticker ticker;
 }

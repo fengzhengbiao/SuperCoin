@@ -105,7 +105,7 @@ public class ActionFragment extends BaseFragment {
 
     @Override
     protected int getLayoutResourceId() {
-        return R.layout.fragment_setting;
+        return R.layout.fragment_normal;
     }
 
     @Override

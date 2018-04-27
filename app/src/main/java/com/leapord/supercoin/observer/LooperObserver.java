@@ -7,7 +7,7 @@ import com.leapord.supercoin.app.Const;
 import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.core.Analyzer;
 import com.leapord.supercoin.core.KlineCalculator;
-import com.leapord.supercoin.entity.http.LiveData;
+import com.leapord.supercoin.entity.http.current.LiveData;
 import com.leapord.supercoin.service.BuyService;
 import com.leapord.supercoin.service.SellService;
 import com.leapord.supercoin.util.LogUtil;
@@ -85,14 +85,14 @@ public class LooperObserver extends CoinObserver<LiveData> {
                 LogUtil.i(TAG, "macd continue decrease");
                 if (Analyzer.isFastIncrease(value.getKLineData())) {
                     LogUtil.e(TAG, "sub kline fast increase");
-                    startOptimalService(true, true);
+//                    startOptimalService(true, true);
                 } else {
                     LogUtil.i(TAG, "looper observer can sell");
-                    startOptimalService(false);
+//                    startOptimalService(false);
                 }
             }
             if (Analyzer.isMacdContinueDecrease(macds, 4)) {
-                startOptimalService(false, true);
+//                startOptimalService(false, true);
                 LogUtil.e(TAG, "sub kline fast decrease");
             }
         }

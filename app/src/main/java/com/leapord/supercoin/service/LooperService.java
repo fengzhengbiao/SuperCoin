@@ -9,7 +9,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.leapord.supercoin.R;
-import com.leapord.supercoin.entity.http.LiveData;
+import com.leapord.supercoin.entity.http.current.LiveData;
 import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.CoinObserver;
 import com.leapord.supercoin.observer.LooperObserver;
@@ -102,7 +102,7 @@ public class LooperService extends Service {
                 //设置通知标题
                 .setContentTitle("SuperCoin")
                 //设置通知内容
-                .setContentText("is running");
+                .setContentText("Coin service running");
         startForeground(5, builder.build());
         return START_STICKY;
     }
