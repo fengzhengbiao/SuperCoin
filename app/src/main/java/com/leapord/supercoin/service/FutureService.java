@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.leapord.supercoin.app.OkCoin;
 import com.leapord.supercoin.core.KlineCalculator;
@@ -30,7 +31,6 @@ public class FutureService extends Service {
     private ArrayList<String> symbols;
     private String period;
     private String kline;
-    private String zone;
     private Disposable disposable;
 
     @Nullable
@@ -50,7 +50,6 @@ public class FutureService extends Service {
             symbols = intent.getStringArrayListExtra("symbols");
             period = intent.getStringExtra("period");
             kline = intent.getStringExtra("kline");
-            zone = intent.getStringExtra("zone");
             startLooper();
         } else {
             stopSelf();
@@ -81,7 +80,7 @@ public class FutureService extends Service {
                                 HttpUtil.createRequest()
                                         .fetchFutureKline(symbol, kline, OkCoin.CONTRACT_TYPE.THIS_WEEK)
                                         .observeOn(Schedulers.io())
-                                        .subscribeOn(Schedulers.computation())
+//                                        .subscribeOn(Schedulers.computation())
                                         .subscribe(new CoinObserver<List<double[]>>() {
                                             @Override
                                             public void onNext(List<double[]> value) {
@@ -114,26 +113,36 @@ public class FutureService extends Service {
         List<Double> K = calculator.computeK();
         List<Double> D = calculator.computeD();
         List<Double> J = calculator.computeJ();
-        computeRecentInterest(value, K, D, J);
+        if (!isPrint) {
+            double recentInterest = computeRecentInterest(value, K, D, J);
+            isPrint = true;
+        }
     }
 
+    private boolean isPrint;
     private List<double[]> recentCrossPoint = new ArrayList<>();
+
 
     private double computeRecentInterest(List<double[]> value, List<Double> k, List<Double> d, List<Double> j) {
         int endIndex = k.size() - 1;
-        for (int i = endIndex; i > 0; i--) {
-            if (k.get(i) == d.get(i) && k.get(i) == j.get(i)) {
-                if (recentCrossPoint.size() == 11) {
-                    recentCrossPoint.remove(10);
-                }
-                recentCrossPoint.add(value.get(i));
-                if (recentCrossPoint.size() == 11) break;
-            }
+        for (int i = endIndex - 1; i > 0; i--) {
+            double diff = Math.abs(k.get(i) - j.get(i));
+            Log.i("vaule", "computeRecentInterest: " + String.format("%f", diff));
+//            if (diff < 20) {
+//                double preDiff = k.get(i + 1) - j.get(i + 1);
+//                double nexDiff = k.get(i - 1) - j.get(i - 1);
+//                if (preDiff * nexDiff < 0) {
+//                    if (recentCrossPoint.size() == 11) {
+//                        recentCrossPoint.remove(10);
+//                    }
+//                    recentCrossPoint.add(value.get(i));
+//                    Log.i("vaule", "computeRecentInterest: " + k.get(i));
+//                    if (recentCrossPoint.size() == 11) break;
+//                }
+//            }
         }
         double range = 0;
-        for (double[] doubles : recentCrossPoint) {
-            range += doubles[1];
-        }
+
         return range;
     }
 
@@ -143,7 +152,6 @@ public class FutureService extends Service {
         intent.putStringArrayListExtra("symbols", symbols);
         intent.putExtra("period", period);
         intent.putExtra("kline", kline);
-        intent.putExtra("zone", zone);
         context.startService(intent);
     }
 }

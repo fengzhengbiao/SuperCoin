@@ -19,7 +19,6 @@ import com.leapord.supercoin.util.SpUtils;
 import com.leapord.supercoin.util.ToastUtis;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -120,19 +119,22 @@ public class FutureFragment extends BaseFragment {
         }
         String kline = SpUtils.getString(Const.FUTURE_KLINE, "");
         if (!TextUtils.isEmpty(kline)) {
-            List<String> klines = JSON.parseArray(kline, String.class);
-            if (klines.contains("15min")) {
-                cb15min.setChecked(true);
+
+            switch (kline) {
+                case "15min":
+                    cb15min.setChecked(true);
+                    break;
+                case "5min":
+                    cb15min.setChecked(true);
+                    break;
+                case "3min":
+                    cb15min.setChecked(true);
+                    break;
+                case "1min":
+                    cb15min.setChecked(true);
+                    break;
             }
-            if (klines.contains("5min")) {
-                cb15min.setChecked(true);
-            }
-            if (klines.contains("3min")) {
-                cb15min.setChecked(true);
-            }
-            if (klines.contains("1min")) {
-                cb15min.setChecked(true);
-            }
+
         }
         String symbol = SpUtils.getString(Const.FUTURE_SYMBOLS, "");
         rbUsdt.setChecked(true);
@@ -143,7 +145,7 @@ public class FutureFragment extends BaseFragment {
     public void onViewClicked(View view) {
         int checkedRadioButtonId = rgTradeZone.getCheckedRadioButtonId();
         String zone = getCoinZone(checkedRadioButtonId);
-        ArrayList<String> selectedSymbol = getSelectedSymbol();
+        ArrayList<String> selectedSymbol = getSelectedSymbol(zone);
         if (TextUtils.isEmpty(zone)) {
             ToastUtis.showToast("请选择交易区");
         }
@@ -154,17 +156,18 @@ public class FutureFragment extends BaseFragment {
         switch (view.getId()) {
             case R.id.btn_buy_increase:
                 for (String s : selectedSymbol) {
-                    TradeManager.openTrade(s + zone, OkCoin.FUTURE_TYPE.OPEN_INCREASE);
+                    TradeManager.openTrade(s, OkCoin.FUTURE_TYPE.OPEN_INCREASE);
                 }
+
                 break;
             case R.id.btn_buy_decrease:
                 for (String s : selectedSymbol) {
-                    TradeManager.openTrade(s + zone, OkCoin.FUTURE_TYPE.OPEN_DECREASE);
+                    TradeManager.openTrade(s , OkCoin.FUTURE_TYPE.OPEN_DECREASE);
                 }
                 break;
             case R.id.btn_close:
                 for (String s : selectedSymbol) {
-                    TradeManager.closeTrade(s + zone);
+                    TradeManager.closeTrade(s,OkCoin.FUTURE_TYPE.CLOSE_INCREASE);
                 }
                 break;
             case R.id.btn_start:
@@ -229,22 +232,22 @@ public class FutureFragment extends BaseFragment {
                 zone = rbEth.getText().toString().toLowerCase().trim();
                 break;
         }
-        return zone;
+        return "_" + zone;
     }
 
-    private ArrayList<String> getSelectedSymbol() {
+    private ArrayList<String> getSelectedSymbol(String zone) {
         ArrayList<String> SYMBOLS = new ArrayList<>();
         if (cbBtc.isChecked()) {
-            SYMBOLS.add(cbBtc.getText().toString().toLowerCase());
+            SYMBOLS.add(cbBtc.getText().toString().toLowerCase() + zone);
         }
         if (cbXpr.isChecked()) {
-            SYMBOLS.add(cbXpr.getText().toString().toLowerCase());
+            SYMBOLS.add(cbXpr.getText().toString().toLowerCase() + zone);
         }
         if (cbEos.isChecked()) {
-            SYMBOLS.add(cbEos.getText().toString().toLowerCase());
+            SYMBOLS.add(cbEos.getText().toString().toLowerCase() + zone);
         }
         if (cbEtc.isChecked()) {
-            SYMBOLS.add(cbEtc.getText().toString().toLowerCase());
+            SYMBOLS.add(cbEtc.getText().toString().toLowerCase() + zone);
         }
         return SYMBOLS;
     }

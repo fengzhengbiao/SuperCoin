@@ -1,5 +1,7 @@
 package com.leapord.supercoin.observer;
 
+import android.os.Looper;
+
 import com.leapord.supercoin.app.CoinApplication;
 import com.leapord.supercoin.entity.dao.Trade;
 import com.leapord.supercoin.entity.dao.TradeDao;
@@ -29,7 +31,7 @@ public class TradeObserver extends CoinObserver<Trade> {
 
     @Override
     public void onError(Throwable e) {
-        ToastUtis.showToast("交易失败：" + e.toString());
+        new android.os.Handler(Looper.getMainLooper()).post(() -> ToastUtis.showToast("交易失败：" + e.toString()));
         LogUtil.i(TAG, "onError: " + e.toString());
         super.onError(e);
     }

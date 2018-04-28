@@ -1,14 +1,15 @@
 package com.leapord.supercoin.network;
 
 import com.leapord.supercoin.entity.http.Depth;
+import com.leapord.supercoin.entity.http.OrderData;
+import com.leapord.supercoin.entity.http.TradeResponse;
 import com.leapord.supercoin.entity.http.current.BbTicker;
 import com.leapord.supercoin.entity.http.current.CancelTradeResp;
-import com.leapord.supercoin.entity.http.current.OrderData;
+import com.leapord.supercoin.entity.http.current.Order;
 import com.leapord.supercoin.entity.http.current.Trade;
-import com.leapord.supercoin.entity.http.TradeResponse;
 import com.leapord.supercoin.entity.http.current.UserInfo;
+import com.leapord.supercoin.entity.http.future.FutureOrder;
 import com.leapord.supercoin.entity.http.future.HoldAmount;
-import com.leapord.supercoin.entity.http.future.HoldPosition;
 import com.leapord.supercoin.entity.http.future.RightInfo;
 
 import java.util.List;
@@ -80,8 +81,8 @@ public interface OkCoinService {
 
     @FormUrlEncoded
     @POST("/api/v1/order_info.do")
-    Observable<OrderData> fetchOrderInfo(@Field("order_id") String order_id,
-                                         @Field("symbol") String symbol
+    Observable<OrderData<Order>> fetchOrderInfo(@Field("order_id") String order_id,
+                                                @Field("symbol") String symbol
     );
 
     ////////////////////////合约////////////////////////////////////////////////////////////////////////////////////////
@@ -103,7 +104,7 @@ public interface OkCoinService {
                                                 @Query("type") String kline,
                                                 @Query("contract_type") String contract_type);
 
-    @POST("/api/v1/future_userinfo.do")
+    @POST("/api/v1/future_userinfo_4fix.do")
         //用户合约权益
     Observable<RightInfo> fetchFutureUserRights();
 
@@ -129,9 +130,21 @@ public interface OkCoinService {
     Observable<List<HoldAmount>> getHoldAmount(@Query("symbol") String symbol,
                                                @Query("contract_type") String contractType);
 
+
+    /**
+     * @param symbol
+     * @param status       查询状态 1:未完成的订单 2:已经完成的订单
+     * @param order_id     订单ID -1:查询指定状态的订单，否则查询相应订单号的订单
+     * @param contractType
+     * @return
+     */
     @FormUrlEncoded
-    @POST("/api/v1/future_position.do")
-    Observable<HoldPosition> getHoldPosition(@Query("symbol") String symbol,
-                                             @Query("contract_type") String contractType);
+    @POST("/api/v1/future_order_info.do")
+    Observable<OrderData<FutureOrder>> fetchOrdersInfo(@Field("symbol") String symbol,
+                                                     @Field("status") String status,
+                                                     @Field("order_id") String order_id,
+                                                     @Field("current_page") int current_page,
+                                                     @Field("page_length") int page_length,
+                                                     @Field("contract_type") String contractType);
 
 }

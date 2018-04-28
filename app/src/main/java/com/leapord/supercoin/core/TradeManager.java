@@ -10,13 +10,13 @@ import com.leapord.supercoin.entity.dao.Trade;
 import com.leapord.supercoin.entity.dao.TradeDao;
 import com.leapord.supercoin.entity.event.OrderEvent;
 import com.leapord.supercoin.entity.event.TradeChangeEvent;
+import com.leapord.supercoin.entity.http.OrderData;
 import com.leapord.supercoin.entity.http.OrderTransform;
 import com.leapord.supercoin.entity.http.TradeResponse;
 import com.leapord.supercoin.entity.http.current.CancelTradeResp;
 import com.leapord.supercoin.entity.http.current.Order;
 import com.leapord.supercoin.entity.http.current.UserWithDepth;
-import com.leapord.supercoin.entity.http.future.HoldPosition;
-import com.leapord.supercoin.entity.http.future.Holder;
+import com.leapord.supercoin.entity.http.future.FutureOrder;
 import com.leapord.supercoin.entity.http.future.RightWithDepth;
 import com.leapord.supercoin.network.HttpUtil;
 import com.leapord.supercoin.observer.TradeObserver;
@@ -328,17 +328,17 @@ public class TradeManager {
                 .observeOn(Schedulers.io())
                 .subscribeOn(Schedulers.computation())
                 .filter(rightWithDepth -> rightWithDepth.getRightInfo().getInfo()
-                        .get(Analyzer.getCoinName(symbol)).getAccount_rights() > OkCoin.MIN_COIN_RIGHT)
+                        .get(Analyzer.getCoinName(symbol)).getRights() > OkCoin.MIN_COIN_RIGHT)
                 .flatMap((Function<RightWithDepth, ObservableSource<OrderTransform>>) rightWithDepth ->
                 {
-                    double accountRights = rightWithDepth.getRightInfo().getInfo().get(symbol).getAccount_rights();
+                    double accountRights = rightWithDepth.getRightInfo().getInfo().get(Analyzer.getCoinName(symbol)).getRights() * 20;
                     double[] depth = TextUtils.equals("1", type) ?
                             Analyzer.getMinAsk(rightWithDepth.getDepth())
                             : Analyzer.getMaxBid(rightWithDepth.getDepth());
                     double amount = Math.min(accountRights, depth[1]);
                     return Observable.zip(Observable.just(new OrderEvent(amount, depth[0])),
                             HttpUtil.createRequest().makeFutureTrade(symbol, OkCoin.CONTRACT_TYPE.THIS_WEEK, "-2",
-                                    String.format("%.3f", amount), type, "1"), OrderTransform::new);
+                                    String.format("%f", amount), type, "1"), OrderTransform::new);
                 }).map(oderTransform -> {
             Trade trade = new Trade();
             trade.setSymbol(symbol);
@@ -359,13 +359,15 @@ public class TradeManager {
      */
     public static void closeTrade(String symbol, final String type) {
         HttpUtil.createRequest()
-                .getHoldPosition(symbol, OkCoin.CONTRACT_TYPE.THIS_WEEK)
-                .flatMap((Function<HoldPosition, ObservableSource<OrderTransform>>) holdPosition -> {
-                    Holder holder = holdPosition.getHolding().get(0);
-                    double amount = Math.max(holder.getBuy_available(), holder.getSell_available());
-                    return Observable.zip(Observable.just(new OrderEvent(amount, 0.00)),
+                .fetchOrdersInfo(symbol, "2", "-1", 0, 20, OkCoin.CONTRACT_TYPE.THIS_WEEK)
+                .filter(futureOrderOrderData -> futureOrderOrderData.isResult() && futureOrderOrderData.getOrders().size() > 0)
+                .subscribeOn(Schedulers.io())
+                .flatMap((Function<OrderData<FutureOrder>, ObservableSource<OrderTransform>>) futureOrderOrderData -> {
+                    double deal_amount = futureOrderOrderData.getOrders().get(0).getDeal_amount();
+                    return Observable.zip(Observable.just(new OrderEvent(deal_amount, 0.00)),
                             HttpUtil.createRequest().makeFutureTrade(symbol, OkCoin.CONTRACT_TYPE.THIS_WEEK, "-2",
-                                    String.format("%.3f", amount), type, "1"), OrderTransform::new);
+                                    String.format("%f", deal_amount), type, "1"), OrderTransform::new);
+
                 }).map(oderTransform -> {
             Trade trade = createTrade(symbol, oderTransform);
             return trade;
@@ -379,32 +381,37 @@ public class TradeManager {
      */
     public static void closeTrade(String symbol) {
         HttpUtil.createRequest()
-                .getHoldPosition(symbol, OkCoin.CONTRACT_TYPE.THIS_WEEK)
-                .filter(holdPosition -> holdPosition.getHolding().size() > 0)
-                .flatMap((Function<HoldPosition, ObservableSource<OrderTransform>>) holdPosition -> {
-                    Holder holder = holdPosition.getHolding().get(0);
-                    double amount = Math.max(holder.getBuy_available(), holder.getSell_available());
-                    String type = holder.getBuy_available() > 0 ? OkCoin.FUTURE_TYPE.CLOSE_INCREASE : OkCoin.FUTURE_TYPE.CLOSE_DECREASE;
-                    return Observable.zip(Observable.just(new OrderEvent(amount, 0.00)),
+                .fetchOrdersInfo(symbol, "2", "-1", 0, 20, OkCoin.CONTRACT_TYPE.THIS_WEEK)
+                .filter(futureOrderOrderData -> futureOrderOrderData.isResult() && futureOrderOrderData.getOrders().size() > 0)
+                .subscribeOn(Schedulers.io())
+                .flatMap((Function<OrderData<FutureOrder>, ObservableSource<OrderTransform>>) futureOrderOrderData -> {
+                    FutureOrder futureOrder = futureOrderOrderData.getOrders().get(0);
+                    double deal_amount = futureOrder.getDeal_amount();
+                    String type = TextUtils.equals(futureOrder.getType(), "1") ? "3" : "4";
+                    return Observable.zip(Observable.just(new OrderEvent(deal_amount, 0.00)),
                             HttpUtil.createRequest().makeFutureTrade(symbol, OkCoin.CONTRACT_TYPE.THIS_WEEK, "-2",
-                                    String.format("%.3f", amount), type, "1"), OrderTransform::new);
-                }).map(oderTransform -> createTrade(symbol, oderTransform)).subscribeOn(Schedulers.io())
-                .subscribe(new TradeObserver());
+                                    String.format("%f", deal_amount), type, "1"), OrderTransform::new);
 
+                }).map(oderTransform -> {
+            Trade trade = createTrade(symbol, oderTransform);
+            return trade;
+        }).subscribeOn(Schedulers.io())
+                .subscribe(new TradeObserver());
     }
 
 
     public static void closeAndOpenNew(String symbol, String openType) {
         HttpUtil.createRequest()
-                .getHoldPosition(symbol, OkCoin.CONTRACT_TYPE.THIS_WEEK)
-                .filter(holdPosition -> holdPosition.getHolding().size() > 0)
-                .flatMap((Function<HoldPosition, ObservableSource<OrderTransform>>) holdPosition -> {
-                    Holder holder = holdPosition.getHolding().get(0);
-                    double amount = Math.max(holder.getBuy_available(), holder.getSell_available());
-                    String type = holder.getBuy_available() > 0 ? OkCoin.FUTURE_TYPE.CLOSE_INCREASE : OkCoin.FUTURE_TYPE.CLOSE_DECREASE;
-                    return Observable.zip(Observable.just(new OrderEvent(amount, 0.00)),
+                .fetchOrdersInfo(symbol, "2", "-1", 0, 20, OkCoin.CONTRACT_TYPE.THIS_WEEK)
+                .filter(futureOrderOrderData -> futureOrderOrderData.isResult() && futureOrderOrderData.getOrders().size() > 0)
+                .flatMap((Function<OrderData<FutureOrder>, ObservableSource<OrderTransform>>) futureOrderOrderData -> {
+                    FutureOrder futureOrder = futureOrderOrderData.getOrders().get(0);
+                    double deal_amount = futureOrder.getDeal_amount();
+                    String type = TextUtils.equals(futureOrder.getType(), "1") ? "3" : "4";
+                    return Observable.zip(Observable.just(new OrderEvent(deal_amount, 0.00)),
                             HttpUtil.createRequest().makeFutureTrade(symbol, OkCoin.CONTRACT_TYPE.THIS_WEEK, "-2",
-                                    String.format("%.3f", amount), type, "1"), OrderTransform::new);
+                                    String.format("%f", deal_amount), type, "1"), OrderTransform::new);
+
                 }).map(oderTransform -> createTrade(symbol, oderTransform))
                 .doOnNext(trade -> {
                     CoinApplication.INSTANCE.setLastOptimalTime(System.currentTimeMillis());
@@ -416,10 +423,10 @@ public class TradeManager {
                 Observable.zip(HttpUtil.createRequest().fetchFutureUserRights(),
                         HttpUtil.createRequest().fetchFutureDepth(symbol, OkCoin.CONTRACT_TYPE.THIS_WEEK, 10), RightWithDepth::new))
                 .filter(rightWithDepth -> rightWithDepth.getRightInfo().getInfo()
-                        .get(Analyzer.getCoinName(symbol)).getAccount_rights() > OkCoin.MIN_COIN_RIGHT)
+                        .get(Analyzer.getCoinName(symbol)).getRights() > OkCoin.MIN_COIN_RIGHT)
                 .flatMap((Function<RightWithDepth, ObservableSource<OrderTransform>>) rightWithDepth ->
                 {
-                    double accountRights = rightWithDepth.getRightInfo().getInfo().get(symbol).getAccount_rights();
+                    double accountRights = rightWithDepth.getRightInfo().getInfo().get(symbol).getRights() * 20;
                     double[] depth = TextUtils.equals("1", openType) ?
                             Analyzer.getMinAsk(rightWithDepth.getDepth())
                             : Analyzer.getMaxBid(rightWithDepth.getDepth());
